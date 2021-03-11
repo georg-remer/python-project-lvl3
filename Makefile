@@ -12,7 +12,7 @@ test:
 	poetry run pytest
 
 test-coverage:
-	poetry run pytest --cov=gendiff --cov-report xml tests
+	poetry run pytest --cov=page_loader --cov-report xml tests
 
 check: selfcheck lint test
 
