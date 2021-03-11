@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "hexlet-code"
+version = "0.1.0"
+description = "CLI-utility to download webpages"
+authors = ["George Rymarenko <george.rymarenko@icloud.com>"]
+packages = [
+  { include = "page_loader" },
+]
+classifiers = [
+  "Topic :: Utilities",
+]
+repository = "https://github.com/georg-remer/python-project-lvl3"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+wemake-python-styleguide = "^0.15.2"
+pytest-cov = "^2.11.1"
+requests-mock = "^1.8.0"
+
+[tool.poetry.scripts]
+page-loader = "page_loader.scripts.loader:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
