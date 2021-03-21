@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" class="nojs">
+<head>
+        <title>Improve Serialization Performance in Django Rest Framework | Haki Benita</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; script-src 'self' https://goat.hakibenita.com 'unsafe-inline' https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' https://www.google-analytics.com *.googleusercontent.com stats.g.doubleclick.net https://goat.hakibenita.com; worker-src 'none'; connect-src 'self' https://www.google-analytics.com; frame-src 'none';">
+    <meta name="description" content="When a developer chooses Python, Django, or Django Rest Framework, it&#39;s usually not because of its blazing fast performance. All of this doesn&#39;t mean performance is not important. As this story taught us, major performance boosts can be gained with just a little attention, and a few small changes.">
+    <meta name="copyright" content="Haki Benita">
+    <link rel="shortcut icon" type="image/png" href="/images/favicon-32x32.png">
+    <link href="https://hakibenita.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Haki Benita Full Atom Feed" />
+
+    <script async src="https://www.google-analytics.com/analytics.js"></script>
+    <script>
+        window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments);};ga.l=+(new Date());
+        ga('create', 'UA-131229086-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <script>
+        window.goatcounter = {
+            path: location.pathname || '/',
+            referrer: function() {
+                return goatcounter.get_query('utm_source') || document.referrer;
+            },
+        };
+        document.addEventListener('DOMContentLoaded', () => {
+            const baseUrl = `${location.protocol}//${location.host}`
+            Array.from(document.querySelectorAll('a[href]'))
+            .filter(a => !a.href.startsWith(baseUrl))
+            .forEach(a => a.addEventListener('click', () => window.goatcounter.count({
+                path: p => `outgoing:${p}`,
+                title: a.textContent,
+                event: true,
+            })));
+        });
+    </script>
+    <script data-goatcounter="https://goat.hakibenita.com:/count" async src="https://goat.hakibenita.com/count.js"></script>
+
+    <script>
+    (function(window, document) {
+        // JS
+        document.documentElement.classList.remove('nojs');
+
+        // Theme
+        const prefersDarkColorScheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const selectedTheme = window.localStorage.getItem('theme');
+        if (selectedTheme === 'dark' || (!selectedTheme && prefersDarkColorScheme)) {
+            document.documentElement.classList.add('dark');
+            ga('set', 'dimension1', 'dark');
+        } else {
+            ga('set', 'dimension1', 'light');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.querySelector('.toggle-theme');
+            toggleButton && toggleButton.addEventListener('click', () => {
+                const wasLight = document.documentElement.classList.toggle('dark');
+                const theme = wasLight ? 'dark' : 'light';
+                ga('set', 'dimension1', theme);
+                ga('send', 'event', 'theme', 'switched theme', theme, 1);
+                window.localStorage.setItem('theme', theme);
+            });
+        });
+    })(window, document);
+    </script>
+    <link rel="stylesheet" type="text/css" href="https://hakibenita.com/theme/css/style.css?v=8864bc0" />
+    <link rel="stylesheet" type="text/css" href="https://hakibenita.com/theme/css/pygment.css?v=8864bc0" />
+
+    <link rel="canonical" href="https://hakibenita.com/django-rest-framework-slow" />
+
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@be_haki" />
+    <meta name="twitter:creator" content="@be_haki" />
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Improve Serialization Performance in Django Rest Framework">
+    <meta property="og:description" content="How we reduced serialization time by 99%!">
+    <meta property="og:url" content="https://hakibenita.com/django-rest-framework-slow">
+    <meta property="og:image" content="https://hakibenita.com/images/01-django-rest-framework-slow.jpg">
+
+    <meta name="subtitle" content="How we reduced serialization time by 99%!">
+    <meta name="author" content="Haki Benita">
+    <meta name="date" content="2019-06-08">
+    <meta name="tags" content="Python">
+    <meta name="tags" content="Django">
+    <meta name="tags" content="Performance">
+
+    <meta name="monetization" content="$ilp.uphold.com/iEY62FwdNGHy">
+
+</head>
+
+<body class="">
+
+    <nav>
+        <a class="logo" href="https://hakibenita.com/">Haki Benita</a>
+        <ul>
+
+                <li><a href="https://hakibenita.com/pages/about">About</a></li>
+                <li><a href="https://hakibenita.com/subscribe">Subscribe</a></li>
+
+        </ul>
+        <button
+            title="Switch Theme"
+            aria-label="Switch Theme"
+            class="toggle-theme">
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="icon-moon">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sun">
+                <circle cx="12" cy="12" r="5" fill="currentColor"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </nav>
+
+    <main>
+<div class="article">
+    <header class="article__header">
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2019-06-08">08 June 2019</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/python">Python</a>,         <a class="tag" href="https://hakibenita.com/tag/django">Django</a>,         <a class="tag" href="https://hakibenita.com/tag/performance">Performance</a>    </li>
+</ul>        <h1>Improve Serialization Performance in Django Rest Framework</h1>
+        <h2>How we reduced serialization time by 99%!</h2>
+    </header>
+
+    <article class="article__content" data-progress-indicator>
+        <hr>
+<p>When a developer chooses Python, Django, or Django Rest Framework, it's usually not because of its blazing fast performance. Python has always been the "comfortable" choice, the language you choose when you care more about ergonomics than skimming a few microseconds of some process.</p>
+<p>There is nothing wrong with ergonomics. Most projects don't really need that micro second performance boost, but they do need to ship quality code fast.</p>
+<p>All of this doesn't mean performance is not important. As this story taught us, major performance boosts can be gained with just a little attention, and a few small changes.</p>
+<figure><img alt="&quot;mip mip&quot;" src="https://hakibenita.com/images/01-django-rest-framework-slow.jpg"><figcaption>"mip mip"</figcaption>
+</figure>
+<h2 id="model-serializer-performance"><a class="toclink" href="#model-serializer-performance">Model Serializer Performance</a></h2>
+<p>A while back we noticed very poor performance from one of our main API endpoints. The endpoint fetched  data from a very large table, so we naturally assumed that the problem must be in the database.</p>
+<p>When we noticed that even small data sets get poor performance, we started looking into other parts of the app. This journey eventually led us to Django Rest Framework (DRF) serializers.</p>
+<div class="admonition info">
+<p class="admonition-title">versions</p>
+<p>In the benchmark we use Python 3.7, Django 2.1.1 and Django Rest Framework 3.9.4.</p>
+</div>
+<h3 id="simple-function"><a class="toclink" href="#simple-function">Simple Function</a></h3>
+<p>Serializers are used for transforming data into objects, and objects into data. This is a simple function, so let's write one that accepts a <code>User</code> instance, and returns a dict:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+
+<span class="k">def</span> <span class="nf">serialize_user</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="s1">&#39;last_login&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">last_login</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">last_login</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="s1">&#39;is_superuser&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">,</span>
+        <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+        <span class="s1">&#39;first_name&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span>
+        <span class="s1">&#39;last_name&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
+        <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+        <span class="s1">&#39;is_staff&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">,</span>
+        <span class="s1">&#39;is_active&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">is_active</span><span class="p">,</span>
+        <span class="s1">&#39;date_joined&#39;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">date_joined</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>Create a user to use in the benchmark:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">username</span><span class="o">=</span><span class="s1">&#39;hakib&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">first_name</span><span class="o">=</span><span class="s1">&#39;haki&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">last_name</span><span class="o">=</span><span class="s1">&#39;benita&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">email</span><span class="o">=</span><span class="s1">&#39;me@hakibenita.com&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+
+
+<p>For our benchmark we are using <a href="https://docs.python.org/3.7/library/profile.html" rel="noopener"><code>cProfile</code></a>. To eliminate external influences such as the database, we fetch a user in advance and serialize it 5,000 times:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cProfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;for i in range(5000): serialize_user(u)&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;tottime&#39;</span><span class="p">)</span>
+<span class="hll"><span class="go">15003 function calls in 0.034 seconds</span>
+</span>
+<span class="go">Ordered by: internal time</span>
+<span class="go">ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">  5000    0.020    0.000    0.021    0.000 {method &#39;isoformat&#39; of &#39;datetime.datetime&#39; objects}</span>
+<span class="go">  5000    0.010    0.000    0.030    0.000 drf_test.py:150(serialize_user)</span>
+<span class="go">     1    0.003    0.003    0.034    0.034 &lt;string&gt;:1(&lt;module&gt;)</span>
+<span class="go">  5000    0.001    0.000    0.001    0.000 __init__.py:208(utcoffset)</span>
+<span class="go">     1    0.000    0.000    0.034    0.034 {built-in method builtins.exec}</span>
+<span class="go">     1    0.000    0.000    0.000    0.000 {method &#39;disable&#39; of &#39;_lsprof.Profiler&#39; objects}</span>
+</pre></div>
+
+
+<p>The simple function took 0.034 seconds to serialize a <code>User</code> object 5,000 times.</p>
+<h3 id="modelserializer"><a class="toclink" href="#modelserializer"><code>ModelSerializer</code></a></h3>
+<p>Django Rest Framework (DRF) comes with a few utility classes, namely the <a href="https://www.django-rest-framework.org/api-guide/serializers/#modelserializer" rel="noopener"><code>ModelSerializer</code></a>.</p>
+<p>A <code>ModelSerializer</code> for the built-in <code>User</code> model might look like this:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="k">class</span> <span class="nc">UserModelSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;last_login&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_superuser&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;first_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;last_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_active&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date_joined&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+</pre></div>
+
+
+<p>Running the same benchmark as before:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;for i in range(5000): UserModelSerializer(u).data&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;tottime&#39;</span><span class="p">)</span>
+<span class="hll"><span class="go">18845053 function calls (18735053 primitive calls) in 12.818 seconds</span>
+</span>
+<span class="go">Ordered by: internal time</span>
+<span class="go">  ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">   85000    2.162    0.000    4.706    0.000 functional.py:82(__prepare_class__)</span>
+<span class="go"> 7955000    1.565    0.000    1.565    0.000 {built-in method builtins.hasattr}</span>
+<span class="go"> 1080000    0.701    0.000    0.701    0.000 functional.py:102(__promise__)</span>
+<span class="go">   50000    0.594    0.000    4.886    0.000 field_mapping.py:66(get_field_kwargs)</span>
+<span class="go"> 1140000    0.563    0.000    0.581    0.000 {built-in method builtins.getattr}</span>
+<span class="go">   55000    0.489    0.000    0.634    0.000 fields.py:319(__init__)</span>
+<span class="go"> 1240000    0.389    0.000    0.389    0.000 {built-in method builtins.setattr}</span>
+<span class="go">    5000    0.342    0.000   11.773    0.002 serializers.py:992(get_fields)</span>
+<span class="go">   20000    0.338    0.000    0.446    0.000 {built-in method builtins.__build_class__}</span>
+<span class="go">  210000    0.333    0.000    0.792    0.000 trans_real.py:275(gettext)</span>
+<span class="go">   75000    0.312    0.000    2.285    0.000 functional.py:191(wrapper)</span>
+<span class="go">   20000    0.248    0.000    4.817    0.000 fields.py:762(__init__)</span>
+<span class="go"> 1300000    0.230    0.000    0.264    0.000 {built-in method builtins.isinstance}</span>
+<span class="go">   50000    0.224    0.000    5.311    0.000 serializers.py:1197(build_standard_field)</span>
+</pre></div>
+
+
+<p>It took DRF 12.8 seconds to serialize a user 5,000 times, or 2.56ms to serialize just a single user. That is <strong>377 times slower than the plain function</strong>.</p>
+<p>We can see that a significant amount of time is spent in <code>functional.py</code>. <code>ModelSerializer</code> uses the <code>lazy</code> function from <code>django.utils.functional</code> to evaluate validations. It is also used by Django verbose names and so on, which are also being evaluated by DRF. This function seem to be weighing down the serializer.</p>
+<h3 id="read-only-modelserializer"><a class="toclink" href="#read-only-modelserializer">Read Only <code>ModelSerializer</code></a></h3>
+<p>Field validations are added by <code>ModelSerializer</code> only for writable fields. To measure the effect of validation, we create a <code>ModelSerializer</code> and mark all fields as read only:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="k">class</span> <span class="nc">UserReadOnlyModelSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;last_login&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_superuser&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;first_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;last_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_active&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;date_joined&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+<span class="hll">        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="n">fields</span>
+</span></pre></div>
+
+
+<p>When all fields are read only, the serializer cannot be used to create new instances.</p>
+<p>Let's run our benchmark with the read only serializer:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;for i in range(5000): UserReadOnlyModelSerializer(u).data&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;tottime&#39;</span><span class="p">)</span>
+<span class="hll"><span class="go">14540060 function calls (14450060 primitive calls) in 7.407 seconds</span>
+</span>
+<span class="go"> Ordered by: internal time</span>
+<span class="go"> ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">6090000    0.809    0.000    0.809    0.000 {built-in method builtins.hasattr}</span>
+<span class="go">  65000    0.725    0.000    1.516    0.000 functional.py:82(__prepare_class__)</span>
+<span class="go">  50000    0.561    0.000    4.182    0.000 field_mapping.py:66(get_field_kwargs)</span>
+<span class="go">  55000    0.435    0.000    0.558    0.000 fields.py:319(__init__)</span>
+<span class="go"> 840000    0.330    0.000    0.346    0.000 {built-in method builtins.getattr}</span>
+<span class="go"> 210000    0.294    0.000    0.688    0.000 trans_real.py:275(gettext)</span>
+<span class="go">   5000    0.282    0.000    6.510    0.001 serializers.py:992(get_fields)</span>
+<span class="go">  75000    0.220    0.000    1.989    0.000 functional.py:191(wrapper)</span>
+<span class="go">1305000    0.200    0.000    0.228    0.000 {built-in method builtins.isinstance}</span>
+<span class="go">  50000    0.182    0.000    4.531    0.000 serializers.py:1197(build_standard_field)</span>
+<span class="go">  50000    0.145    0.000    0.259    0.000 serializers.py:1310(include_extra_kwargs)</span>
+<span class="go">  55000    0.133    0.000    0.696    0.000 text.py:14(capfirst)</span>
+<span class="go">  50000    0.127    0.000    2.377    0.000 field_mapping.py:46(needs_label)</span>
+<span class="go"> 210000    0.119    0.000    0.145    0.000 gettext.py:451(gettext)</span>
+</pre></div>
+
+
+<p>Only 7.4 seconds. A 40% improvement compared to the writable <code>ModelSerializer</code>.</p>
+<p>In the benchmark's output we can see a lot of time is being spent in <code>field_mapping.py</code> and <code>fields.py</code>. These are related to the inner workings of the <code>ModelSerializer</code>. In the serialization and initialization process the <code>ModelSerializer</code> is using a lot of metadata to construct and validate the serializer fields, and it comes at a cost.</p>
+<h3 id="regular-serializer"><a class="toclink" href="#regular-serializer">"Regular" <code>Serializer</code></a></h3>
+<p>In the next benchmark, we wanted to measure exactly how much the <code>ModelSerializer</code> "costs" us. Let's create a "regular" <a href="https://www.django-rest-framework.org/api-guide/serializers/#declaring-serializers" rel="noopener"><code>Serializer</code></a> for the <code>User</code> model:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="k">class</span> <span class="nc">UserSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">last_login</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+    <span class="n">is_superuser</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">EmailField</span><span class="p">()</span>
+    <span class="n">is_staff</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+    <span class="n">is_active</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+    <span class="n">date_joined</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Running the same benchmark using the "regular" serializer:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;for i in range(5000): UserSerializer(u).data&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;tottime&#39;</span><span class="p">)</span>
+<span class="hll"><span class="go">3110007 function calls (3010007 primitive calls) in 2.101 seconds</span>
+</span>
+<span class="go">Ordered by: internal time</span>
+<span class="go">   ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">    55000    0.329    0.000    0.430    0.000 fields.py:319(__init__)</span>
+<span class="go">105000/5000    0.188    0.000    1.247    0.000 copy.py:132(deepcopy)</span>
+<span class="go">    50000    0.145    0.000    0.863    0.000 fields.py:626(__deepcopy__)</span>
+<span class="go">    20000    0.093    0.000    0.320    0.000 fields.py:762(__init__)</span>
+<span class="go">   310000    0.092    0.000    0.092    0.000 {built-in method builtins.getattr}</span>
+<span class="go">    50000    0.087    0.000    0.125    0.000 fields.py:365(bind)</span>
+<span class="go">     5000    0.072    0.000    1.934    0.000 serializers.py:508(to_representation)</span>
+<span class="go">    55000    0.055    0.000    0.066    0.000 fields.py:616(__new__)</span>
+<span class="go">     5000    0.053    0.000    1.204    0.000 copy.py:268(_reconstruct)</span>
+<span class="go">   235000    0.052    0.000    0.052    0.000 {method &#39;update&#39; of &#39;dict&#39; objects}</span>
+<span class="go">    50000    0.048    0.000    0.097    0.000 fields.py:55(is_simple_callable)</span>
+<span class="go">   260000    0.048    0.000    0.075    0.000 {built-in method builtins.isinstance}</span>
+<span class="go">    25000    0.047    0.000    0.051    0.000 deconstruct.py:14(__new__)</span>
+<span class="go">    55000    0.042    0.000    0.057    0.000 copy.py:252(_keep_alive)</span>
+<span class="go">    50000    0.041    0.000    0.197    0.000 fields.py:89(get_attribute)</span>
+<span class="go">     5000    0.037    0.000    1.459    0.000 serializers.py:353(fields)</span>
+</pre></div>
+
+
+<p>Here is the leap we were waiting for!</p>
+<p>The "regular" serializer took only 2.1 seconds. That's 60% faster than the read only <code>ModelSerializer</code>, and a whooping 85% faster than the writable <code>ModelSerializer</code>.</p>
+<p>At this point it become obvious that the <code>ModelSerializer</code> does not come cheap!</p>
+<h3 id="read-only-regular-serializer"><a class="toclink" href="#read-only-regular-serializer">Read Only "regular" <code>Serializer</code></a></h3>
+<p>In the writable <code>ModelSerializer</code> a lot of time was spent on validations. We were able to make it faster by marking all fields as read only. The "regular" serializer does not define any validation, so marking fields as read only is not expected to be faster. Let's make sure:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="k">class</span> <span class="nc">UserReadOnlySerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">last_login</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">is_superuser</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">is_staff</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">is_active</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">date_joined</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+
+<p>And running the benchmark for a user instance:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;for i in range(5000): UserReadOnlySerializer(u).data&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;tottime&#39;</span><span class="p">)</span>
+<span class="hll"><span class="go">3360009 function calls (3210009 primitive calls) in 2.254 seconds</span>
+</span>
+<span class="go">Ordered by: internal time</span>
+<span class="go">   ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">    55000    0.329    0.000    0.433    0.000 fields.py:319(__init__)</span>
+<span class="go">155000/5000    0.241    0.000    1.385    0.000 copy.py:132(deepcopy)</span>
+<span class="go">    50000    0.161    0.000    1.000    0.000 fields.py:626(__deepcopy__)</span>
+<span class="go">   310000    0.095    0.000    0.095    0.000 {built-in method builtins.getattr}</span>
+<span class="go">    20000    0.088    0.000    0.319    0.000 fields.py:762(__init__)</span>
+<span class="go">    50000    0.087    0.000    0.129    0.000 fields.py:365(bind)</span>
+<span class="go">     5000    0.073    0.000    2.086    0.000 serializers.py:508(to_representation)</span>
+<span class="go">    55000    0.055    0.000    0.067    0.000 fields.py:616(__new__)</span>
+<span class="go">     5000    0.054    0.000    1.342    0.000 copy.py:268(_reconstruct)</span>
+<span class="go">   235000    0.053    0.000    0.053    0.000 {method &#39;update&#39; of &#39;dict&#39; objects}</span>
+<span class="go">    25000    0.052    0.000    0.057    0.000 deconstruct.py:14(__new__)</span>
+<span class="go">   260000    0.049    0.000    0.076    0.000 {built-in method builtins.isinstance}</span>
+</pre></div>
+
+
+<p>As expected, marking the fields as readonly didn't make a significant difference compared to the "regular" serializer. This reaffirms that the time was spent on validations derived from the model's field definitions.</p>
+<h3 id="results-summary"><a class="toclink" href="#results-summary">Results Summary</a></h3>
+<p>Here is a summary of the results so far:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>serializer</th>
+<th>seconds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UserModelSerializer</code></td>
+<td>12.818</td>
+</tr>
+<tr>
+<td><code>UserReadOnlyModelSerializer</code></td>
+<td>7.407</td>
+</tr>
+<tr>
+<td><code>UserSerializer</code></td>
+<td>2.101</td>
+</tr>
+<tr>
+<td><code>UserReadOnlySerializer</code></td>
+<td>2.254</td>
+</tr>
+<tr>
+<td><code>serialize_user</code></td>
+<td>0.034</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="prior-work"><a class="toclink" href="#prior-work">Prior Work</a></h2>
+<p>A lot of articles were written about serialization performance in Python. As expected, most articles focus on improving DB access using techniques like <code>select_related</code> and <code>prefetch_related</code>. While both are valid ways to improve the <em>overall</em> response time of an API request, they don't address the serialization itself. I suspect this is because nobody expects serialization to be slow.</p>
+<p>Other articles that do focus solely on serialization usually avoid fixing DRF, and instead motivate <a href="https://engineering.betterworks.com/2015/09/04/ditching-django-rest-framework-serializers-for-serpy/" rel="noopener">new serialization frameworks</a> such as <a href="https://marshmallow.readthedocs.io" rel="noopener">marshmallow</a> and <a href="https://serpy.readthedocs.io/en/latest/" rel="noopener">serpy</a>. There is even a site devoted to <a href="https://voidfiles.github.io/python-serialization-benchmark/" rel="noopener">comparing serialization formats in Python</a>. To save you a click, DRF always comes last.</p>
+<p>In late 2013, Tom Christie, the creator of Django Rest Framework, wrote <a href="https://www.dabapps.com/blog/api-performance-profiling-django-rest-framework/" rel="noopener">an article</a> discussing some of DRF's drawbacks. In his benchmarks, serialization accounted for 12% of the total time spend on processing a single request. In the summary, Tom recommends to not always resort to serialization:</p>
+<blockquote>
+<p><strong>4. You don't always need to use serializers.</strong></p>
+<p>For performance critical views you might consider dropping the serializers entirely and simply use .values() in your database queries.</p>
+</blockquote>
+<p>As we see in a bit, this is solid advice.</p>
+<hr>
+<h2 id="why-is-this-happening"><a class="toclink" href="#why-is-this-happening">Why is This Happening?</a></h2>
+<p>In the first benchmark using <code>ModelSerializer</code> we saw a significant amount of time being spent in <code>functional.py</code>, and more specifically in the function <code>lazy</code>.</p>
+<h3 id="fixing-djangos-lazy"><a class="toclink" href="#fixing-djangos-lazy">Fixing Django's <code>lazy</code></a></h3>
+<p>The function <code>lazy</code> is used internally by Django for many things such as verbose names, templates etc. <a href="https://github.com/django/django/blob/2.2.1/django/utils/functional.py#L92-L207" rel="noopener">The source</a> describes <code>lazy</code> as follows:</p>
+<blockquote>
+<p>Encapsulate a function call and act as a proxy for methods that are called on the result of that function. The function is not evaluated until one of the methods on the result is called.</p>
+</blockquote>
+<p>The <code>lazy</code> function does its magic by creating a proxy of the result class. To create the proxy, <code>lazy</code> iterates over all attributes and functions of the result class (and its super-classes), and creates a wrapper class which evaluates the function only when its result is actually used.</p>
+<p>For large result classes, it can take some time to create the proxy. So, to speed things up, <code>lazy</code> caches the proxy. But as it turns out, <strong>a small oversight in the code completely broke the cache mechanism, making the <code>lazy</code> function <em>very very</em> slow.</strong></p>
+<p>To get a sense of just how slow <code>lazy</code> is without proper caching, let's use a simple function which returns an <code>str</code> (the result class), such as <code>upper</code>. We choose <code>str</code> because it has a lot of methods, so it should take a while to set up a proxy for it.</p>
+<p>To establish a baseline, we benchmark using <code>str.upper</code> directly, without <code>lazy</code>:</p>
+<div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cProfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.utils.functional</span> <span class="kn">import</span> <span class="n">lazy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper</span> <span class="o">=</span> <span class="nb">str</span><span class="o">.</span><span class="n">upper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;for i in range(50000): upper(&#39;hello&#39;) + &quot;&quot;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;cumtime&#39;</span><span class="p">)</span>
+
+<span class="hll"><span class="go"> 50003 function calls in 0.034 seconds</span>
+</span>
+<span class="go"> Ordered by: cumulative time</span>
+
+<span class="go"> ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">     1    0.000    0.000    0.034    0.034 {built-in method builtins.exec}</span>
+<span class="go">     1    0.024    0.024    0.034    0.034 &lt;string&gt;:1(&lt;module&gt;)</span>
+<span class="go"> 50000    0.011    0.000    0.011    0.000 {method &#39;upper&#39; of &#39;str&#39; objects}</span>
+<span class="go">     1    0.000    0.000    0.000    0.000 {method &#39;disable&#39; of &#39;_lsprof.Profiler&#39; objects}</span>
+</pre></div>
+
+
+<p>Now for the scary part, the exact same function but this time wrapped with <code>lazy</code>:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">lazy_upper</span> <span class="o">=</span> <span class="n">lazy</span><span class="p">(</span><span class="n">upper</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">cProfile</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;for i in range(50000): lazy_upper(&#39;hello&#39;) + &quot;&quot;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;cumtime&#39;</span><span class="p">)</span>
+
+<span class="hll"><span class="go"> 4900111 function calls in 1.139 seconds</span>
+</span>
+<span class="go"> Ordered by: cumulative time</span>
+
+<span class="go"> ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="go">      1    0.000    0.000    1.139    1.139 {built-in method builtins.exec}</span>
+<span class="go">      1    0.037    0.037    1.139    1.139 &lt;string&gt;:1(&lt;module&gt;)</span>
+<span class="go">  50000    0.018    0.000    1.071    0.000 functional.py:160(__wrapper__)</span>
+<span class="go">  50000    0.028    0.000    1.053    0.000 functional.py:66(__init__)</span>
+<span class="go">  50000    0.500    0.000    1.025    0.000 functional.py:83(__prepare_class__)</span>
+<span class="go">4600000    0.519    0.000    0.519    0.000 {built-in method builtins.hasattr}</span>
+<span class="go">  50000    0.024    0.000    0.031    0.000 functional.py:106(__wrapper__)</span>
+<span class="go">  50000    0.006    0.000    0.006    0.000 {method &#39;mro&#39; of &#39;type&#39; objects}</span>
+<span class="go">  50000    0.006    0.000    0.006    0.000 {built-in method builtins.getattr}</span>
+<span class="go">     54    0.000    0.000    0.000    0.000 {built-in method builtins.setattr}</span>
+<span class="go">     54    0.000    0.000    0.000    0.000 functional.py:103(__promise__)</span>
+<span class="go">      1    0.000    0.000    0.000    0.000 {method &#39;disable&#39; of &#39;_lsprof.Profiler&#39; objects}</span>
+</pre></div>
+
+
+<p>No mistake! Using <code>lazy</code> it took 1.139 seconds to turn 5,000 strings uppercase. The same exact function used directly took only 0.034 seconds. That is 33.5 faster.</p>
+<p>This was obviously an oversight. The developers were clearly aware of the importance of caching the proxy. A PR was issued, and merged shortly after (diff <a href="https://github.com/django/django/commit/a2c31e12da272acc76f3a3a0157fae9a7f6477ac" rel="noopener">here</a>). Once released, this patch is supposed to make Django overall performance a bit better.</p>
+<h3 id="fixing-django-rest-framework"><a class="toclink" href="#fixing-django-rest-framework">Fixing Django Rest Framework</a></h3>
+<p>DRF uses <code>lazy</code> for validations and fields verbose names. When all of these lazy evaluations are put together, you get a noticeable slowdown.</p>
+<p>The fix to <code>lazy</code> in Django would have solved this issue for DRF as well after a minor fix, but nonetheless, <a href="https://github.com/encode/django-rest-framework/commit/c2293e9f251b1f215825186a7bcbf5a006df0cb0" rel="noopener">a separate fix to DRF</a> was made to replace <code>lazy</code> with something more efficient.</p>
+<p>To see the effect of the changes, install the latest of both Django and DRF:</p>
+<div class="highlight"><pre><span></span><span class="gp">(venv) $</span> pip install git+https://github.com/encode/django-rest-framework
+<span class="gp">(venv) $</span> pip install git+https://github.com/django/django
+</pre></div>
+
+
+<p>After applying both patches, we ran the same benchmark again. These are the results side by side:</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>serializer</th>
+<th>before</th>
+<th>after</th>
+<th>% change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UserModelSerializer</code></td>
+<td>12.818</td>
+<td>5.674</td>
+<td>-55%</td>
+</tr>
+<tr>
+<td><code>UserReadOnlyModelSerializer</code></td>
+<td>7.407</td>
+<td>5.323</td>
+<td>-28%</td>
+</tr>
+<tr>
+<td><code>UserSerializer</code></td>
+<td>2.101</td>
+<td>2.146</td>
+<td>+2%</td>
+</tr>
+<tr>
+<td><code>UserReadOnlySerializer</code></td>
+<td>2.254</td>
+<td>2.125</td>
+<td>-5%</td>
+</tr>
+<tr>
+<td><code>serialize_user</code></td>
+<td>0.034</td>
+<td>0.034</td>
+<td>0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>To sum up the results of the changes to both Django and DRF:</p>
+<ul>
+<li>Serialization time for writable <code>ModelSerializer</code> was cut by half.</li>
+<li>Serialization time for a read only <code>ModelSerializer</code> was cut by almost a third.</li>
+<li>As expected, there is no noticeable difference in the other serialization methods.</li>
+</ul>
+<h2 id="takeaway"><a class="toclink" href="#takeaway">Takeaway</a></h2>
+<p>Our takeaways from this experiment were:</p>
+<div class="admonition tip">
+<p class="admonition-title">Take away</p>
+<p>Upgrade DRF and Django once these patches make their way into a formal release.</p>
+</div>
+<p>Both PR's were merged but not yet released.</p>
+<div class="admonition tip">
+<p class="admonition-title">Take away</p>
+<p>In performance critical endpoints, use a "regular" serializer, or none at all.</p>
+</div>
+<p>We had several places where clients were fetching large amounts or data using an API. The API was used only for reading data from the server, so we decided to not use a <code>Serializer</code> at all, and inline the serialization instead.</p>
+<div class="admonition tip">
+<p class="admonition-title">Take away</p>
+<p>Serializer fields that are not used for writing or validation, should be read only.</p>
+</div>
+<p>As we've seen in the benchmarks, the way validations are implemented makes them expensive. Marking fields as read only eliminate unnecessary additional cost.</p>
+<hr>
+<h3 id="bonus-forcing-good-habits"><a class="toclink" href="#bonus-forcing-good-habits">Bonus: Forcing Good Habits</a></h3>
+<p>To make sure developers don't forget to set read only fields, we added a Django check to make sure all <code>ModelSerializer</code>s set <code>read_only_fields</code>:</p>
+<div class="highlight"><pre><span></span><span class="c1"># common/checks.py</span>
+
+<span class="kn">import</span> <span class="nn">django.core.checks</span>
+
+<span class="nd">@django.core.checks.register</span><span class="p">(</span><span class="s1">&#39;rest_framework.serializers&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">check_serializers</span><span class="p">(</span><span class="n">app_configs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">inspect</span>
+    <span class="kn">from</span> <span class="nn">rest_framework.serializers</span> <span class="kn">import</span> <span class="n">ModelSerializer</span>
+    <span class="kn">import</span> <span class="nn">conf.urls</span>  <span class="c1"># noqa, force import of all serializers.</span>
+
+    <span class="k">for</span> <span class="n">serializer</span> <span class="ow">in</span> <span class="n">ModelSerializer</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
+
+        <span class="c1"># Skip third-party apps.</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfile</span><span class="p">(</span><span class="n">serializer</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;site-packages&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">serializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">,</span> <span class="s1">&#39;read_only_fields&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="k">yield</span> <span class="n">django</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">checks</span><span class="o">.</span><span class="n">Warning</span><span class="p">(</span>
+            <span class="s1">&#39;ModelSerializer must define read_only_fields.&#39;</span><span class="p">,</span>
+            <span class="n">hint</span><span class="o">=</span><span class="s1">&#39;Set read_only_fields in ModelSerializer.Meta&#39;</span><span class="p">,</span>
+            <span class="n">obj</span><span class="o">=</span><span class="n">serializer</span><span class="p">,</span>
+            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;H300&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+
+
+<p>With this check in place, when a developer adds a serializer she must also set <code>read_only_fields</code>. If the serializer is writable, <code>read_only_fields</code> can be set to an empty tuple. If a developer forgets to set <code>read_only_fields</code>, she gets the following error:</p>
+<div class="highlight"><pre><span></span><span class="gp">$</span> python manage.py check
+<span class="go">System check identified some issues:</span>
+
+<span class="go">WARNINGS:</span>
+<span class="go">&lt;class &#39;serializers.UserSerializer&#39;&gt;: (H300) ModelSerializer must define read_only_fields.</span>
+<span class="go">    HINT: Set read_only_fields in ModelSerializer.Meta</span>
+
+<span class="go">System check identified 1 issue (4 silenced).</span>
+</pre></div>
+
+
+<p>We use Django checks a lot to make sure nothing falls through the cracks. You can find many other useful checks in this article about <a href="/automating-the-boring-stuff-in-django-using-the-check-framework">how we use the Django system check framework</a>.</p>
+    </article>
+
+    <hr>
+<style>
+.subscribe {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.subscribe form {
+    max-width: 100%;
+    min-width: 0;
+}
+.subscribe__image {
+    margin-right: 1em;
+}
+.subscribe h5 {
+    line-height: var(--line-height-tight);
+    margin-bottom: 0.5em;
+}
+.subscribe__input {
+    display: flex;
+    border: 1px solid var(--brand-color);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+}
+.subscribe__input input {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    border-radius: 0;
+    background-color: inherit;
+    padding: 0 1em;
+    line-height: 2.5;
+    min-width: 0;
+    max-width: 100%;
+    flex-grow: 1;
+}
+.subscribe__input input[type="email"] {
+    font-family: inherit;
+}
+.subscribe__input input[type="submit"] {
+    background-color: var(--brand-color);
+    color: var(--bg-color);
+    font-family: monospace;
+    font-weight: bold;
+}
+.subscribe__input input[type="submit"]:disabled {
+    opacity: 0.5;
+}
+@media only screen and (max-width: 380px) {
+    .subscribe__message br {
+        display: none;
+    }
+}
+</style>
+
+<section class="subscribe">
+    <div class="subscribe__image">
+        <img src="/images/subscribe.png">
+    </div>
+    <form method="POST" action="https://mailer.hakibenita.com/subscribe" name="subscribe" validate>
+        <h5 class="subscribe__message">Want me to send you an email <br> when I publish something new?</h5>
+        <input type="hidden" name="mailinglist" value="articles@hakibenita.com">
+        <input type="hidden" name="token" value="d38VSLEkO15jvpilOSZmATRc6iqEkQM0fyrSsRjmrok=">
+        <input type="hidden" name="redirecturl" value="https://hakibenita.com/subscribed">
+            <input type="hidden" name="article" value="Improve Serialization Performance in Django Rest Framework">
+            <input type="hidden" name="tag" value="Python">
+            <input type="hidden" name="tag" value="Django">
+            <input type="hidden" name="tag" value="Performance">
+        <div class="subscribe__input">
+            <input type="email" name="email" placeholder="your@email.com" required>
+            <input type="submit" value="YES!">
+        </div>
+    </form>
+    <script>
+        (function(document) {
+            document.querySelector('form[name=subscribe]').addEventListener('submit', function(e) {
+                e.target.querySelector('input[type=submit]').disabled = true;
+            });
+        })(document);
+    </script>
+</section>
+    <hr>
+    <section class="share">
+        <h5>Share to show you care</h5>
+
+<ul class="share-icons">
+    <li>
+        <a href="mailto:?subject=Improve%20Serialization%20Performance%20in%20Django%20Rest%20Framework%20by%20Haki%20Benita&body=https%3A//hakibenita.com/django-rest-framework-slow" title="Email">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <title>Email</title>
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a href="https://twitter.com/intent/tweet/?text=Improve%20Serialization%20Performance%20in%20Django%20Rest%20Framework%20by%20Haki%20Benita&url=https%3A//hakibenita.com/django-rest-framework-slow&via=be_haki&hashtags=Python,Django,Performance" target="_blank" title="Twitter" aria-label="share via twitter">
+            <svg role="img" viewBox="0 0 24 24" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <title>Twitter</title>
+                <path d="M23.954 4.569c-.885.389-1.83.654-2.825.775 1.014-.611 1.794-1.574 2.163-2.723-.951.555-2.005.959-3.127 1.184-.896-.959-2.173-1.559-3.591-1.559-2.717 0-4.92 2.203-4.92 4.917 0 .39.045.765.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475 0 1.71.87 3.213 2.188 4.096-.807-.026-1.566-.248-2.228-.616v.061c0 2.385 1.693 4.374 3.946 4.827-.413.111-.849.171-1.296.171-.314 0-.615-.03-.916-.086.631 1.953 2.445 3.377 4.604 3.417-1.68 1.319-3.809 2.105-6.102 2.105-.39 0-.779-.023-1.17-.067 2.189 1.394 4.768 2.209 7.557 2.209 9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63.961-.689 1.8-1.56 2.46-2.548l-.047-.02z"/>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a href="https://facebook.com/sharer/sharer.php?u=https%3A//hakibenita.com/django-rest-framework-slow" target="_blank" title="Facebook" aria-label="Share on Facebook">
+            <svg role="img" viewBox="0 0 24 24" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <title>Facebook</title>
+                <path d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.408.593 24 1.324 24h11.494v-9.294H9.689v-3.621h3.129V8.41c0-3.099 1.894-4.785 4.659-4.785 1.325 0 2.464.097 2.796.141v3.24h-1.921c-1.5 0-1.792.721-1.792 1.771v2.311h3.584l-.465 3.63H16.56V24h6.115c.733 0 1.325-.592 1.325-1.324V1.324C24 .593 23.408 0 22.676 0"/>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a href="https://www.reddit.com/submit?url=https%3A//hakibenita.com/django-rest-framework-slow&title=Improve%20Serialization%20Performance%20in%20Django%20Rest%20Framework%20by%20Haki%20Benita" target="_blank" title="Reddit" aria-label="Submit to Reddit">
+            <svg role="img" viewBox="0 0 24 24" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <title>Reddit</title>
+                <path d="M2.204 14.049c-.06.276-.091.56-.091.847 0 3.443 4.402 6.249 9.814 6.249 5.41 0 9.812-2.804 9.812-6.249 0-.274-.029-.546-.082-.809l-.015-.032c-.021-.055-.029-.11-.029-.165-.302-1.175-1.117-2.241-2.296-3.103-.045-.016-.088-.039-.126-.07-.026-.02-.045-.042-.067-.064-1.792-1.234-4.356-2.008-7.196-2.008-2.815 0-5.354.759-7.146 1.971-.014.018-.029.033-.049.049-.039.033-.084.06-.13.075-1.206.862-2.042 1.937-2.354 3.123 0 .058-.014.114-.037.171l-.008.015zm9.773 5.441c-1.794 0-3.057-.389-3.863-1.197-.173-.174-.173-.457 0-.632.176-.165.46-.165.635 0 .63.629 1.685.943 3.228.943 1.542 0 2.591-.3 3.219-.929.165-.164.45-.164.629 0 .165.18.165.465 0 .645-.809.808-2.065 1.198-3.862 1.198l.014-.028zm-3.606-7.573c-.914 0-1.677.765-1.677 1.677 0 .91.763 1.65 1.677 1.65s1.651-.74 1.651-1.65c0-.912-.739-1.677-1.651-1.677zm7.233 0c-.914 0-1.678.765-1.678 1.677 0 .91.764 1.65 1.678 1.65s1.651-.74 1.651-1.65c0-.912-.739-1.677-1.651-1.677zm4.548-1.595c1.037.833 1.8 1.821 2.189 2.904.45-.336.719-.864.719-1.449 0-1.002-.815-1.816-1.818-1.816-.399 0-.778.129-1.09.363v-.002zM2.711 9.963c-1.003 0-1.817.816-1.817 1.818 0 .543.239 1.048.644 1.389.401-1.079 1.172-2.053 2.213-2.876-.302-.21-.663-.329-1.039-.329v-.002zm9.217 12.079c-5.906 0-10.709-3.205-10.709-7.142 0-.275.023-.544.068-.809C.494 13.598 0 12.729 0 11.777c0-1.496 1.227-2.713 2.725-2.713.674 0 1.303.246 1.797.682 1.856-1.191 4.357-1.941 7.112-1.992l1.812-5.524.404.095s.016 0 .016.002l4.223.993c.344-.798 1.138-1.36 2.065-1.36 1.229 0 2.231 1.004 2.231 2.234 0 1.232-1.003 2.234-2.231 2.234s-2.23-1.004-2.23-2.23l-3.851-.912-1.467 4.477c2.65.105 5.047.854 6.844 2.021.494-.464 1.144-.719 1.833-.719 1.498 0 2.718 1.213 2.718 2.711 0 .987-.54 1.886-1.378 2.365.029.255.059.494.059.749-.015 3.938-4.806 7.143-10.72 7.143l-.034.009zm8.179-19.187c-.74 0-1.34.599-1.34 1.338 0 .738.6 1.34 1.34 1.34.732 0 1.33-.6 1.33-1.334 0-.733-.598-1.332-1.347-1.332l.017-.012z"/>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a style="display: none;" href="#" data-share="Improve Serialization Performance in Django Rest Framework by Haki Benita" data-share-url="django-rest-framework-slow" title="Native">
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+                <title>Share</title>
+                <circle fill="currentColor" cx="18" cy="5" r="3"></circle>
+                <circle fill="currentColor" cx="6" cy="12" r="3"></circle>
+                <circle fill="currentColor" cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+        </a>
+    </li>
+</ul>
+
+
+<script>
+(function(window, document) {
+    navigator.share && document.addEventListener('DOMContentLoaded', () => {
+        const share = document.querySelector('[data-share]');
+        share.style.display = 'inherit';
+        share.addEventListener('click', e => {
+            e.preventDefault();
+            navigator.share({
+                title: share.getAttribute('data-share'),
+                url: share.getAttribute('data-share-url'),
+            }).then(() => console.info('shared!'));
+        });
+    });
+    [].forEach.call(document.querySelectorAll('.share-icons a[title]'), link => {
+        link.addEventListener('click', () => {
+            ga('send', 'social', link.title, 'share', window.location.href);
+            ga('send', 'event', 'share', link.title, window.location.href, 1);
+        });
+    });
+})(window, document);
+</script>    </section>
+
+    <hr>
+    <section class="admonition tip">
+        <h4 class="admonition-title">Similar articles</h4>
+        <ul class="similar_posts">
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2019-09-17">17 September 2019</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/python">Python</a>,         <a class="tag" href="https://hakibenita.com/tag/django">Django</a>,         <a class="tag" href="https://hakibenita.com/tag/orm">ORM</a>,         <a class="tag" href="https://hakibenita.com/tag/performance">Performance</a>    </li>
+</ul>                <a href="python-django-optimizing-excel-export">
+                    <h4>How "Export to Excel" Almost Killed Our System</h4>
+                    <p>And How We Eventually Made It 4 Times Faster</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2020-12-08">08 December 2020</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/python">Python</a>,         <a class="tag" href="https://hakibenita.com/tag/django">Django</a>    </li>
+</ul>                <a href="python-mypy-exhaustive-checking">
+                    <h4>Exhaustiveness Checking with Mypy</h4>
+                    <p>Fail at compile time, not at run time</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2020-03-30">30 March 2020</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/django">Django</a>,         <a class="tag" href="https://hakibenita.com/tag/python">Python</a>    </li>
+</ul>                <a href="django-markdown">
+                    <h4>Using Markdown in Django</h4>
+                    <p>Manage Content in Django Sites</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2020-02-12">12 February 2020</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/django">Django</a>,         <a class="tag" href="https://hakibenita.com/tag/python">Python</a>    </li>
+</ul>                <a href="python-django-twilio-ivr">
+                    <h4>Building an IVR System with Python, Django and Twilio</h4>
+                    <p></p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2016-11-09">09 November 2016</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/python">Python</a>,         <a class="tag" href="https://hakibenita.com/tag/django">Django</a>,         <a class="tag" href="https://hakibenita.com/tag/testing">Testing</a>,         <a class="tag" href="https://hakibenita.com/tag/performance">Performance</a>    </li>
+</ul>                <a href="timing-tests-in-python-for-fun-and-profit">
+                    <h4>Timing Tests in Python For Fun and Profit</h4>
+                    <p>Because the first step to better test performance is awareness!</p>
+                </a>
+            </li>
+        </ul>
+    </section>
+
+</div>
+
+<script>
+(function(window, document) {
+    const progressIndicatorForElement = document.querySelector('[data-progress-indicator]');
+    if (!progressIndicatorForElement) {
+        return;
+    }
+
+    const progressElement = document.createElement('div');
+    progressElement.setAttribute('role', 'presentation');
+    progressElement.classList.add('progress-indicator');
+
+    // Initial position.
+    progressElement.style.left = "-100%";
+    progressElement.style.transform = "translateX(-100%)";
+
+    document.body.appendChild(progressElement);
+
+    let lastKnownScrollPosition = 0;
+    let ticking = false;
+
+    window.addEventListener('scroll', function(e) {
+        lastKnownScrollPosition = window.scrollY;
+        if (ticking) {
+            return;
+        }
+        window.requestAnimationFrame(function() {
+            var offset = Math.min(100, lastKnownScrollPosition / (progressIndicatorForElement.scrollHeight - window.innerHeight) * 100);
+            progressElement.style.transform = `translateX(${offset}%)`;
+            ticking = false;
+        });
+        ticking = true;
+    });
+})(window, document);
+</script>
+
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://hakibenita.com/django-rest-framework-slow"
+    },
+    "headline": "Improve Serialization Performance in Django Rest Framework",
+    "description": "When a developer chooses Python, Django, or Django Rest Framework, it\u0027s usually not because of its blazing fast performance. All of this doesn\u0027t mean performance is not important. As this story taught us, major performance boosts can be gained with just a little attention, and a few small changes.",
+    "datePublished": "2019-06-08",
+    "dateModified": "2019-06-08",
+    "author": {
+        "@type": "Person",
+        "name": "Haki Benita"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Haki Benita",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://hakibenita.com/images/favicon-32x32.png"
+        }
+    },
+    "image": [
+            "https://hakibenita.com/images/01-django-rest-framework-slow.jpg",
+        "https://hakibenita.com/images/favicon-32x32.png"
+    ]
+}
+</script>
+
+    </main>
+
+    <footer>
+        <ul>
+            <li>© Haki Benita 2016-2021</li>
+            <li><a href="/pages/credits">Credits</a></li>
+        </ul>
+        <ul>
+            <li><a href="#">↑ Top</a></li>
+        </ul>
+    </footer>
+</body>
+</html>

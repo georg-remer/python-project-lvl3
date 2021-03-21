@@ -19,3 +19,6 @@ page-loader -h
 
 ### Download page with images
 [![asciicast](https://asciinema.org/a/jV9ubBg5xArCRe2xqBNaCrwMD.svg)](https://asciinema.org/a/jV9ubBg5xArCRe2xqBNaCrwMD)
+
+### Download page with all local sources
+[![asciicast](https://asciinema.org/a/ZJMvSpO82MNoUngmlbQqebnxY.svg)](https://asciinema.org/a/ZJMvSpO82MNoUngmlbQqebnxY)
