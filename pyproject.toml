@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexlet-code"
-version = "0.2.1"
+version = "0.3.0"
 description = "CLI-utility to download webpages"
 authors = ["George Rymarenko <george.rymarenko@icloud.com>"]
 packages = [
