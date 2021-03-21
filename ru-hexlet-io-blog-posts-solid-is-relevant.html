@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ru" prefix="og: https://ogp.me/ns#">
+ <head>
+  <title>
+   О релевантности принципов объектно-ориентированного...
+  </title>
+  <meta content="authenticity_token" name="csrf-param">
+  <meta content="P_C_BAfQnmva_YmH7v7fxGoZjB58rtjwmxS2EDPTKTack-wu86AemhzKx0JDZLa7bguZP84NnOMbX_WpGYu-RQ" name="csrf-token">
+  <meta name="csp-nonce">
+  <link href="https://cdn2.hexlet.io/assets/favicon-8fa102c058afb01de5016a155d7db433283dc7e08ddc3c4d1aef527c1b8502b6.ico" rel="shortcut icon" type="image/x-icon">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta charset="utf-8">
+  <script type="text/javascript">
+   var _rollbarConfig = {"accessToken":"fc27636027d0460bbc1578d97d0d27ad","captureUncaught":true,"captureUnhandledRejections":true,"hostWhiteList":["https://cdn2.hexlet.io"],"ignoredMessages":["(?-mix:VK is not defined)","(?-mix:VK.Retargeting is undefined)","(?-mix:pktAnnotationHighlighter)","(?-mix:amplitude)","(?-mix:grecaptcha)","(?-mix:google_tag_manager)","(?-mix:Unexpected keyword)","(?-mix:illegal character)","(?-mix:Unexpected identifier)","(?-mix:Illegal invocation)","(?-mix:missing = in const declaration)"],"payload":{"client":{"code_version":"v5201","guess_uncaught_frames":true},"environment":"production","person":{"id":null,"username":null,"email":null}}};
+  </script>
+  <script type="text/javascript">
+   !function(r){var e={};function o(n){if(e[n])return e[n].exports;var t=e[n]={i:n,l:!1,exports:{}};return r[n].call(t.exports,t,t.exports,o),t.l=!0,t.exports}o.m=r,o.c=e,o.d=function(r,e,n){o.o(r,e)||Object.defineProperty(r,e,{enumerable:!0,get:n})},o.r=function(r){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(r,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(r,"__esModule",{value:!0})},o.t=function(r,e){if(1&e&&(r=o(r)),8&e)return r;if(4&e&&"object"==typeof r&&r&&r.__esModule)return r;var n=Object.create(null);if(o.r(n),Object.defineProperty(n,"default",{enumerable:!0,value:r}),2&e&&"string"!=typeof r)for(var t in r)o.d(n,t,function(e){return r[e]}.bind(null,t));return n},o.n=function(r){var e=r&&r.__esModule?function(){return r.default}:function(){return r};return o.d(e,"a",e),e},o.o=function(r,e){return Object.prototype.hasOwnProperty.call(r,e)},o.p="",o(o.s=0)}([function(r,e,o){"use strict";var n=o(1),t=o(5);_rollbarConfig=_rollbarConfig||{},_rollbarConfig.rollbarJsUrl=_rollbarConfig.rollbarJsUrl||"https://cdn.rollbar.com/rollbarjs/refs/tags/v2.19.3/rollbar.min.js",_rollbarConfig.async=void 0===_rollbarConfig.async||_rollbarConfig.async;var a=n.setupShim(window,_rollbarConfig),l=t(_rollbarConfig);window.rollbar=n.Rollbar,a.loadFull(window,document,!_rollbarConfig.async,_rollbarConfig,l)},function(r,e,o){"use strict";var n=o(2),t=o(3);function a(r){return function(){try{return r.apply(this,arguments)}catch(r){try{console.error("[Rollbar]: Internal error",r)}catch(r){}}}}var l=0;function i(r,e){this.options=r,this._rollbarOldOnError=null;var o=l++;this.shimId=function(){return o},"undefined"!=typeof window&&window._rollbarShims&&(window._rollbarShims[o]={handler:e,messages:[]})}var s=o(4),d=function(r,e){return new i(r,e)},c=function(r){return new s(d,r)};function u(r){return a((function(){var e=this,o=Array.prototype.slice.call(arguments,0),n={shim:e,method:r,args:o,ts:new Date};window._rollbarShims[this.shimId()].messages.push(n)}))}i.prototype.loadFull=function(r,e,o,n,t){var l=!1,i=e.createElement("script"),s=e.getElementsByTagName("script")[0],d=s.parentNode;i.crossOrigin="",i.src=n.rollbarJsUrl,o||(i.async=!0),i.onload=i.onreadystatechange=a((function(){if(!(l||this.readyState&&"loaded"!==this.readyState&&"complete"!==this.readyState)){i.onload=i.onreadystatechange=null;try{d.removeChild(i)}catch(r){}l=!0,function(){var e;if(void 0===r._rollbarDidLoad){e=new Error("rollbar.js did not load");for(var o,n,a,l,i=0;o=r._rollbarShims[i++];)for(o=o.messages||[];n=o.shift();)for(a=n.args||[],i=0;i<a.length;++i)if("function"==typeof(l=a[i])){l(e);break}}"function"==typeof t&&t(e)}()}})),d.insertBefore(i,s)},i.prototype.wrap=function(r,e,o){try{var n;if(n="function"==typeof e?e:function(){return e||{}},"function"!=typeof r)return r;if(r._isWrap)return r;if(!r._rollbar_wrapped&&(r._rollbar_wrapped=function(){o&&"function"==typeof o&&o.apply(this,arguments);try{return r.apply(this,arguments)}catch(o){var e=o;throw e&&("string"==typeof e&&(e=new String(e)),e._rollbarContext=n()||{},e._rollbarContext._wrappedSource=r.toString(),window._rollbarWrappedError=e),e}},r._rollbar_wrapped._isWrap=!0,r.hasOwnProperty))for(var t in r)r.hasOwnProperty(t)&&(r._rollbar_wrapped[t]=r[t]);return r._rollbar_wrapped}catch(e){return r}};for(var p="log,debug,info,warn,warning,error,critical,global,configure,handleUncaughtException,handleAnonymousErrors,handleUnhandledRejection,captureEvent,captureDomContentLoaded,captureLoad".split(","),f=0;f<p.length;++f)i.prototype[p[f]]=u(p[f]);r.exports={setupShim:function(r,e){if(r){var o=e.globalAlias||"Rollbar";if("object"==typeof r[o])return r[o];r._rollbarShims={},r._rollbarWrappedError=null;var l=new c(e);return a((function(){e.captureUncaught&&(l._rollbarOldOnError=r.onerror,n.captureUncaughtExceptions(r,l,!0),e.wrapGlobalEventHandlers&&t(r,l,!0)),e.captureUnhandledRejections&&n.captureUnhandledRejections(r,l,!0);var a=e.autoInstrument;return!1!==e.enabled&&(void 0===a||!0===a||"object"==typeof a&&a.network)&&r.addEventListener&&(r.addEventListener("load",l.captureLoad.bind(l)),r.addEventListener("DOMContentLoaded",l.captureDomContentLoaded.bind(l))),r[o]=l,l}))()}},Rollbar:c}},function(r,e,o){"use strict";function n(r,e,o,n){r._rollbarWrappedError&&(n[4]||(n[4]=r._rollbarWrappedError),n[5]||(n[5]=r._rollbarWrappedError._rollbarContext),r._rollbarWrappedError=null);var t=e.handleUncaughtException.apply(e,n);o&&o.apply(r,n),"anonymous"===t&&(e.anonymousErrorsPending+=1)}r.exports={captureUncaughtExceptions:function(r,e,o){if(r){var t;if("function"==typeof e._rollbarOldOnError)t=e._rollbarOldOnError;else if(r.onerror){for(t=r.onerror;t._rollbarOldOnError;)t=t._rollbarOldOnError;e._rollbarOldOnError=t}e.handleAnonymousErrors();var a=function(){var o=Array.prototype.slice.call(arguments,0);n(r,e,t,o)};o&&(a._rollbarOldOnError=t),r.onerror=a}},captureUnhandledRejections:function(r,e,o){if(r){"function"==typeof r._rollbarURH&&r._rollbarURH.belongsToShim&&r.removeEventListener("unhandledrejection",r._rollbarURH);var n=function(r){var o,n,t;try{o=r.reason}catch(r){o=void 0}try{n=r.promise}catch(r){n="[unhandledrejection] error getting `promise` from event"}try{t=r.detail,!o&&t&&(o=t.reason,n=t.promise)}catch(r){}o||(o="[unhandledrejection] error getting `reason` from event"),e&&e.handleUnhandledRejection&&e.handleUnhandledRejection(o,n)};n.belongsToShim=o,r._rollbarURH=n,r.addEventListener("unhandledrejection",n)}}}},function(r,e,o){"use strict";function n(r,e,o){if(e.hasOwnProperty&&e.hasOwnProperty("addEventListener")){for(var n=e.addEventListener;n._rollbarOldAdd&&n.belongsToShim;)n=n._rollbarOldAdd;var t=function(e,o,t){n.call(this,e,r.wrap(o),t)};t._rollbarOldAdd=n,t.belongsToShim=o,e.addEventListener=t;for(var a=e.removeEventListener;a._rollbarOldRemove&&a.belongsToShim;)a=a._rollbarOldRemove;var l=function(r,e,o){a.call(this,r,e&&e._rollbar_wrapped||e,o)};l._rollbarOldRemove=a,l.belongsToShim=o,e.removeEventListener=l}}r.exports=function(r,e,o){if(r){var t,a,l="EventTarget,Window,Node,ApplicationCache,AudioTrackList,ChannelMergerNode,CryptoOperation,EventSource,FileReader,HTMLUnknownElement,IDBDatabase,IDBRequest,IDBTransaction,KeyOperation,MediaController,MessagePort,ModalWindow,Notification,SVGElementInstance,Screen,TextTrack,TextTrackCue,TextTrackList,WebSocket,WebSocketWorker,Worker,XMLHttpRequest,XMLHttpRequestEventTarget,XMLHttpRequestUpload".split(",");for(t=0;t<l.length;++t)r[a=l[t]]&&r[a].prototype&&n(e,r[a].prototype,o)}}},function(r,e,o){"use strict";function n(r,e){this.impl=r(e,this),this.options=e,function(r){for(var e=function(r){return function(){var e=Array.prototype.slice.call(arguments,0);if(this.impl[r])return this.impl[r].apply(this.impl,e)}},o="log,debug,info,warn,warning,error,critical,global,configure,handleUncaughtException,handleAnonymousErrors,handleUnhandledRejection,_createItem,wrap,loadFull,shimId,captureEvent,captureDomContentLoaded,captureLoad".split(","),n=0;n<o.length;n++)r[o[n]]=e(o[n])}(n.prototype)}n.prototype._swapAndProcessMessages=function(r,e){var o,n,t;for(this.impl=r(this.options);o=e.shift();)n=o.method,t=o.args,this[n]&&"function"==typeof this[n]&&("captureDomContentLoaded"===n||"captureLoad"===n?this[n].apply(this,[t[0],o.ts]):this[n].apply(this,t));return this},r.exports=n},function(r,e,o){"use strict";r.exports=function(r){return function(e){if(!e&&!window._rollbarInitialized){for(var o,n,t=(r=r||{}).globalAlias||"Rollbar",a=window.rollbar,l=function(r){return new a(r)},i=0;o=window._rollbarShims[i++];)n||(n=o.handler),o.handler._swapAndProcessMessages(l,o.messages);window[t]=n,window._rollbarInitialized=!0}}}}]);
+  </script>
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta content="b9d3902d34" name="verify-admitad">
+  <script>
+   //<![CDATA[
+window.gon={};gon.is_bot=true;gon.applications={};gon.hs={"autoloadBeacon":true};gon.current_user={"id":null,"email":null,"username":null,"created_at":"2021-03-21T09:44:54.736Z","last_viewed_notification_id":null,"paid_days_count":0,"full_name":"","text":" ()","is_guest":true,"is_mentor":false,"current_company":null,"can_use_paid_features":false};gon.token="jQEOX5okefOvRdbfx-IZNq5Bl0Rs5e3M_xh4MnLLWyouYl11blT5AmlymBpqeHBJqlOCZd5Gqd9_UzuLWJPMWQ";gon.disqus_name="hexletio";gon.locale="ru";gon.rails_env="production";gon.mobile=false;gon.google={"analytics_key":"UA-1360700-51","optimize_key":"GTM-5QDVFPF"};gon.social_signin=false;gon.typoreporter_google_form_id="1FAIpQLSeibfGq-KvWQ2Fyru-zkFFRVTLBuzXAHAoEyN1p49FtDmNoNA";gon.post={"id":1294,"can_like":false,"votes":[{"id":14032,"user_id":98430},{"id":14035,"user_id":129080},{"id":14037,"user_id":227620},{"id":14038,"user_id":185751},{"id":14039,"user_id":258434},{"id":14040,"user_id":265161},{"id":14047,"user_id":243615},{"id":14048,"user_id":43343},{"id":14050,"user_id":286816},{"id":14053,"user_id":302329},{"id":14057,"user_id":199233},{"id":14062,"user_id":207990},{"id":14064,"user_id":316759}]};gon.votes=[{"id":14032,"user_id":98430},{"id":14035,"user_id":129080},{"id":14037,"user_id":227620},{"id":14038,"user_id":185751},{"id":14039,"user_id":258434},{"id":14040,"user_id":265161},{"id":14047,"user_id":243615},{"id":14048,"user_id":43343},{"id":14050,"user_id":286816},{"id":14053,"user_id":302329},{"id":14057,"user_id":199233},{"id":14062,"user_id":207990},{"id":14064,"user_id":316759}];gon.votes_count=13;
+//]]>
+  </script>
+  <script type="application/ld+json">
+   {"@context":"https://schema.org","@type":"Organization","name":"Hexlet","url":"https://hexlet.io","sameAs":["https://www.facebook.com/Hexlet","https://www.youtube.com/user/HexletUniversity","https://twitter.com/HexletHQ","https://soundcloud.com/hexlet"],"legalName":"Hexlet Ltd.","address":"UMA Esplanadi, Pohjoisesplanadi 39, 00100 Helsinki, Finland","vatID":"VAT ID: FI26641607","telephone":"+7 (495) 147-73-79","logo":{"@type":"ImageObject","url":"https://cdn2.hexlet.io/assets/hexlet_logo-e99fc2b3b7c1eec88899f3af1435a39aaac6fd29d011dfe2342499c0884b7a96.png"}}
+  </script>
+  <script>
+   (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-WK88TH');
+  </script>
+  <script>
+   // in development mode
+  if (!window.Rollbar) {
+    Rollbar = {
+      error: function() {
+      },
+      configure: function() {
+      }
+    }
+  }
+  
+  Rollbar.configure({
+    payload: {
+      person: gon.current_user
+    },
+  });
+  </script>
+  <link href="https://cdn2.hexlet.io/packs/css/958-a9c0d05c.css" media="all" rel="stylesheet">
+  <link href="https://cdn2.hexlet.io/packs/css/application-d6019d81.css" media="all" rel="stylesheet">
+  <link href="https://ru.hexlet.io/blog.rss" rel="alternate" title="RSS" type="application/rss+xml">
+  <meta content="article" property="og:type">
+  <meta content="О релевантности принципов объектно-ориентированного программирования SOLID" property="og:title">
+  <meta content="https://ru.hexlet.io/blog/posts/solid-is-relevant" property="og:url">
+  <link href="https://ru.hexlet.io/blog/posts/solid-is-relevant" rel="canonical">
+  <meta content="Сегодня принципы SOLID остаются такими же релевантными, как в 90-е годы и раньше. Это связано с тем, что программы практически не изменились за эти годы. Более того, программы сильно не изменились с 1945 года, когда Алан Тьюринг написал первые строки кода для электронного компьютера.
+" name="description">
+  <meta content="Сегодня принципы SOLID остаются такими же релевантными, как в 90-е годы и раньше. Это связано с тем, что программы практически не изменились за эти годы. Более того, программы сильно не изменились с 1945 года, когда Алан Тьюринг написал первые строки кода для электронного компьютера.
+" property="og:description">
+  <meta content="https://cdn2.hexlet.io/derivations/image/fill/600/400/eyJpZCI6ImQxMjI1YjE3YzM4YmM0NmZjNDBhOTA1OWRkYmYxOTZlLmpwZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=2ad2c57c9238afe3d9fc8a4d9dded0e8c5ca35d5e29c9d917195e82c5fbe6735" property="og:image">
+  <link href="https://cdn2.hexlet.io/derivations/image/fill/600/400/eyJpZCI6ImQxMjI1YjE3YzM4YmM0NmZjNDBhOTA1OWRkYmYxOTZlLmpwZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=2ad2c57c9238afe3d9fc8a4d9dded0e8c5ca35d5e29c9d917195e82c5fbe6735" rel="image_src">
+  <script type="application/ld+json">
+   {"@context":"https://schema.org","@type":"Article","headline":"О релевантности принципов объектно-ориентированного программирования SOLID","datePublished":"2021-03-18T18:03:01.401Z","description":"Сегодня принципы SOLID остаются такими же релевантными, как в 90-е годы и раньше. Это связано с тем, что программы практически не изменились за эти годы. Более того, программы сильно не изменились с 1945 года, когда Алан Тьюринг написал первые строки кода для электронного компьютера.\n","dateModified":"2021-03-18T18:08:06.180Z","articleBody":"Примечание — Это адаптированный перевод статьи Роберта Мартина Solid Relevance (http://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html). Повествование ведётся от лица автора оригинала.\nНедавно я получил письмо, автор которого интересовался релевантностью принципов SOLID. Вот что он написал:\nМногие годы вопросы о принципах SOLID были стандартными на собеседованиях в нашей компании. Мы ожидали от кандидатов хорошего понимания этих принципов. В какой-то момент один из наших менеджеров, который уже полностью не погружён только в программирование, спросил, актуально ли говорить с кандидатами о SOLID. Он сказал, что принцип открытости-закрытости стал не таким важным, как раньше. Это связано с переходом от монолитов к микросервисной архитектуре. Принцип подстановки Лисков давно устарел, потому что мы уже не уделяем столько же внимания наследованию, как 20 лет назад. Думаю, нам стоит учитывать позицию Дэна Норта в отношении SOLID (https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong), которую он выразил в рекомендации: «Пишите простой код».\nВ ответном письме я написал следующее. \nСегодня принципы SOLID остаются такими же релевантными, как в 90-е годы и раньше. Это связано с тем, что программы практически не изменились за эти годы. Более того, программы сильно не изменились с 1945 года, когда Алан Тьюринг написал первые строки кода для электронного компьютера. Программы всё ещё состоят из операторов if, циклов while и операторов присваивания. Это всё ещё последовательность, перебор и итерация. \nКаждому новому поколению нравится думать, что его мир сильно отличается от мира, в котором жили предыдущие поколения. Это ошибка, которую совершает каждое поколение. Оно осознаёт эту ошибку, когда появляется следующее поколение, которое приходит и рассказывает, как сильно всё вокруг изменилось. \nДавайте рассмотрим каждый принцип и оценим его актуальность.\nПринцип единственной ответственности\nДержите вместе сущности, которые меняются по одной причине. Разделяйте сущности, которые меняются по разным причинам.\nСложно представить, что этот принцип стал нерелевантным. Мы не смешиваем код, который отвечает за бизнес-логику, с кодом, который отвечает за интерфейсы. Мы не смешиваем SQL-запросы с протоколами передачи данных. Мы разделяем код, который меняется по разным причинам, благодаря чему изменения в одной подсистеме не влияют на другие подсистемы. Мы следим, чтобы модули, которые меняются по разным причинам, не влияли друг на друга.\nМикросервисы не решают эту проблему. Если вы смешиваете код, который меняется по разным причинам, то можете получить запутанные микросервисы или даже наборы запутанных микросервисов.\nСлайды Дэна Норта, ссылка на которые приводится выше, не учитывают этого момента. Из-за этого мне кажется, что он вообще не понимает принцип единственной ответственности, или что он иронизировал. Насколько я знаю Дэна, последнее очень вероятно. В ответ на упоминание принципа единственной ответственности он предлагает писать простой код. Я согласен с этим. Принцип единственное ответственности — один из способов писать простой код.\nПринцип открытости-закрытости\nМодуль должен быть открыт для расширения, но закрыт для модификации.\nКогда кто-то сомневается в релевантности именно этого принципа, я сильнее всего беспокоюсь за будущее программирования. Конечно, мы хотим создавать модули, которые можно расширять без модификации. Вы можете представить себе работу с системой, в которой не реализована независимость от типа девайса, например, в которой запись файла на диск фундаментально отличается от печати файла на принтере? Мы же не хотим видеть отдельные инструкции для каждого типа девайса в коде?\nИли… Хотим ли мы отделять абстрактные концепции от конкретных понятий? Хотим ли мы отделять бизнес-логику от небольших деталей, связанных с интерфейсами, или от протоколов передачи данных, или произвольного поведения базы данных? Конечно да!\nИ снова в слайдах Дэна Норта есть ошибка. При изменении требований только часть существующего кода становится неактуальной. Но значительная часть кода остаётся актуальной. И мы хотим знать, что нам не придётся менять работающую часть кода только для того, чтобы неработающий код снова заработал. Дэн снова предлагает писать простой код. И я снова соглашаюсь. Соблюдение принципа открытости-закрытости помогает писать простой код.\nПринцип подстановки Лисков\nЕсли программа использует интерфейс, она не должна знать о реализации этого интерфейса.\nЛюди, и я в том числе, долгое время ошибались, думая, что принцип подстановки Лисков применим только к наследованию. Это не так. Этот принцип определяет использование подтипов. \nВсе реализации интерфейса являются подтипами этого интерфейса. Все утиные типы относятся к подтипам подразумеваемого интерфейса. А каждый пользователь базового интерфейса должен принимать значение этого интерфейса. Если реализация мешает пользователю базового типа, количество конструкций if/switch в коде растёт. \nПринцип подстановки Лисков говорит о необходимости чётко определять абстракции. Невозможно поверить, что этот принцип устарел. \nВ этом случае Дэн и его слайды правы. Он просто упустил из виду детали: простой код — это код, в котором чётко выделены абстракции. \nПринцип разделения интерфейса\nДелайте интерфейсы маленькими, чтобы клиенты не зависели от вещей, которыми они не пользуются.\nМы всё ещё работаем с компилируемыми языками (https://ru.hexlet.io/blog/posts/yazyk-programmirovaniya-java-osobennosti-populyarnost-situatsiya-na-rynke-truda). Мы всё ещё зависим от дат модификации, с помощью которых определяем, какие модули нужно перекомпилировать и повторно задеплоить. Пока это так, придётся сталкиваться с проблемой зависимости модуля A от модуля B во время компиляции, а не во время выполнения, поскольку изменения в модуле B приведут к перекомпиляции и повторному деплою модуля A. \nЭта проблема стоит особенно остро в языках со статической типизацией, например, Java, C#, C++, Go, Swift и так далее. Языки с динамической типизацией подвержены этому в гораздо меньшей степени, но всё-таки полностью не защищены от этой проблемы. Это доказывает существование таких инструментов, как Maven и Leiningen.\n!custom_blockquote!()\nЧитайте также: Системы типов в языке — какие бывают и чем отличаются (https://ru.hexlet.io/blog/posts/sistemy-tipov-v-yazyke-kakie-byvayut-i-chem-otlichayutsya)\nСлайд Дэна, посвящённый этому принципу, содержит явно неправильную информацию. Клиенты однозначно зависят от методов, которые не используют, если они нуждаются в перекомпиляции и повторному деплое, когда эти методы меняются. Финальное замечание Дэна здравое, насколько это возможно. Да, если вы можете разделить класс с двумя интерфейсами на два класса, сделайте это. Это соответствует принципу единой ответственности. Но такое разделение часто невозможно и даже нежелательно. \nПринцип инверсии зависимостей\nМодули верхнего уровня не должны зависеть от деталей реализации модулей нижнего уровня.\nТрудно представить архитектуру, в которой не используется этот принцип. Мы не хотим, чтобы высокоуровневая бизнес-логика зависела от деталей реализации на нижних уровнях. Я надеюсь, что это очевидно. Мы не хотим, чтобы вычисления, которые приносят нам деньги, смешивались с SQL-запросами, низкоуровневой валидацией или форматированием. \nМы хотим изолировать высокоуровневые абстракции от низкоуровневых деталей. Это разделение возможно благодаря корректному управлению зависимостями внутри системы. Это управление позволяет всем зависимостям в исходном коде, особенно пересекающим архитектурные границы, указывать на высокоуровневые абстракции, а не на низкоуровневые детали. \nСлайды Дэна каждый раз заканчиваются призывом писать простой код. Это хороший совет. Но если годы развития индустрии чему-то нас научили, так это тому, что простота требует дисциплины, которая возможна благодаря принципам. Это те самые принципы, которые определяют простоту. Это та дисциплина, которая заставляет программистов писать простой код. \nЛучший способ всё усложнить и устроить беспорядок — просто посоветовать людям писать простой код и ничего больше им не объяснить.\n","accessMode":"textual","mainEntityOfPage":{"@type":"WebPage","url":"https://ru.hexlet.io/blog/posts/1294"},"author":{"@type":"Person","name":"Дмитрий Дементий","image":"https://cdn2.hexlet.io/derivations/image/fill/80/80/eyJpZCI6Ijc3ZjMyMzJlZjBmMDI4YjZjZGQ3YTEyMzVlMThhZDQ2LmpwZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=d2416cbf85c5bf348e3d38a03755b0cc2988496962834e6c9508c8b81f422a74"},"publisher":{"@context":"https://schema.org","@type":"Organization","name":"Hexlet","url":"https://hexlet.io","sameAs":["https://www.facebook.com/Hexlet","https://www.youtube.com/user/HexletUniversity","https://twitter.com/HexletHQ","https://soundcloud.com/hexlet"],"legalName":"Hexlet Ltd.","address":"UMA Esplanadi, Pohjoisesplanadi 39, 00100 Helsinki, Finland","vatID":"VAT ID: FI26641607","telephone":"+7 (495) 147-73-79","logo":{"@type":"ImageObject","url":"https://cdn2.hexlet.io/assets/hexlet_logo-e99fc2b3b7c1eec88899f3af1435a39aaac6fd29d011dfe2342499c0884b7a96.png"}}}
+  </script>
+ </head>
+ <body class="min-vh-100">
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+   <iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-WK88TH" style="display:none;visibility:hidden" width="0">
+   </iframe>
+  </noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white hexlet-navbar border-bottom">
+   <a aria-hidden="true" class="navbar-brand mr-4" href="/">
+    Хекслет
+   </a>
+   <button aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbarResponsive" data-toggle="collapse" type="button">
+    <span class="navbar-toggler-icon">
+    </span>
+   </button>
+   <div class="collapse navbar-collapse" id="navbarResponsive">
+    <ul class="navbar-nav mr-auto">
+     <li class="nav-item">
+      <a class="nav-link hexlet-navbar-link px-3" href="/programs">
+       <div class="my-2">
+        Программы
+       </div>
+      </a>
+     </li>
+     <li class="nav-item">
+      <a class="nav-link hexlet-navbar-link px-3" href="/courses">
+       <div class="my-2">
+        Курсы
+       </div>
+      </a>
+     </li>
+     <li class="nav-item">
+      <a class="nav-link hexlet-navbar-link px-3" href="/pricing">
+       <div class="my-2">
+        Цены
+       </div>
+      </a>
+     </li>
+     <li class="nav-item">
+      <a class="nav-link hexlet-navbar-link px-3" href="/teams">
+       <div class="my-2">
+        Компаниям
+       </div>
+      </a>
+     </li>
+    </ul>
+    <ul class="navbar-nav">
+     <li class="nav-item">
+      <a class="nav-link hexlet-navbar-link px-3" href="https://ru.hexlet.io/session/new">
+       <div class="my-2">
+        Вход
+       </div>
+      </a>
+     </li>
+     <li class="nav-item">
+      <a class="nav-link hexlet-navbar-link px-3" href="/u/new">
+       <div class="my-2">
+        Регистрация
+       </div>
+      </a>
+     </li>
+    </ul>
+   </div>
+  </nav>
+  <main class="mb-5">
+   <section class="container-xl mt-4 mt-md-5 mb-5 pb-3">
+    <span class="fal fa-chevron-left mr-1 text-muted">
+    </span>
+    <a class="x-link-only-hover" href="/blog">
+     Все статьи
+    </a>
+    <span class="text-muted mx-2">
+     |
+    </span>
+    <a class="x-link-only-hover" href="/blog/categories/dev">
+     Разработка
+    </a>
+    <div class="row justify-content-center mt-4">
+     <article class="col-12 col-lg-9 col-xl-8">
+      <h1 class="mb-4 mb-lg-5">
+       О релевантности принципов объектно-ориентированного программирования SOLID
+      </h1>
+      <div class="mb-4">
+       <img alt="О релевантности принципов объектно-ориентированного программирования SOLID главное изображение" class="img-fluid" src="https://cdn2.hexlet.io/derivations/image/fill/850/400/eyJpZCI6ImQxMjI1YjE3YzM4YmM0NmZjNDBhOTA1OWRkYmYxOTZlLmpwZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=ef082cb14481c475b8bfcd71e2a66eea035ca6d43535a646f07088d365f0e5cd">
+      </div>
+      <div class="hexlet-blog-post-body">
+       <p>
+        <em>
+         Примечание &mdash; Это адаптированный перевод
+         <a href="http://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html" rel="nofollow" target="_blank">
+          статьи Роберта Мартина Solid Relevance
+         </a>
+         . Повествование ведётся от лица автора оригинала.
+        </em>
+       </p>
+       <p>
+        Недавно я получил письмо, автор которого интересовался релевантностью принципов SOLID. Вот что он написал:
+       </p>
+       <blockquote>
+        <p>
+         Многие годы вопросы о принципах SOLID были стандартными на собеседованиях в нашей компании. Мы ожидали от кандидатов хорошего понимания этих принципов. В какой-то момент один из наших менеджеров, который уже полностью не погружён только в программирование, спросил, актуально ли говорить с кандидатами о SOLID. Он сказал, что принцип открытости-закрытости стал не таким важным, как раньше. Это связано с переходом от монолитов к микросервисной архитектуре. Принцип подстановки Лисков давно устарел, потому что мы уже не уделяем столько же внимания наследованию, как 20 лет назад. Думаю, нам стоит учитывать
+         <a href="https://speakerdeck.com/tastapod/why-every-element-of-solid-is-wrong" rel="nofollow" target="_blank">
+          позицию Дэна Норта в отношении SOLID
+         </a>
+         , которую он выразил в рекомендации: &laquo;Пишите простой код&raquo;.
+        </p>
+       </blockquote>
+       <p>
+        В ответном письме я написал следующее.
+       </p>
+       <p>
+        Сегодня принципы SOLID остаются такими же релевантными, как в 90-е годы и раньше. Это связано с тем, что программы практически не изменились за эти годы. Более того, программы сильно не изменились с 1945 года, когда Алан Тьюринг написал первые строки кода для электронного компьютера. Программы всё ещё состоят из операторов
+        <code>
+         if
+        </code>
+        , циклов
+        <code>
+         while
+        </code>
+        и операторов присваивания. Это всё ещё последовательность, перебор и итерация.
+       </p>
+       <p>
+        Каждому новому поколению нравится думать, что его мир сильно отличается от мира, в котором жили предыдущие поколения. Это ошибка, которую совершает каждое поколение. Оно осознаёт эту ошибку, когда появляется следующее поколение, которое приходит и рассказывает, как сильно всё вокруг изменилось.
+       </p>
+       <p>
+        Давайте рассмотрим каждый принцип и оценим его актуальность.
+       </p>
+       <h2 id="printsip-edinstvennoy-otvetstvennosti">
+        Принцип единственной ответственности
+       </h2>
+       <blockquote>
+        <p>
+         Держите вместе сущности, которые меняются по одной причине. Разделяйте сущности, которые меняются по разным причинам.
+        </p>
+       </blockquote>
+       <p>
+        Сложно представить, что этот принцип стал нерелевантным. Мы не смешиваем код, который отвечает за бизнес-логику, с кодом, который отвечает за интерфейсы. Мы не смешиваем SQL-запросы с протоколами передачи данных. Мы разделяем код, который меняется по разным причинам, благодаря чему изменения в одной подсистеме не влияют на другие подсистемы. Мы следим, чтобы модули, которые меняются по разным причинам, не влияли друг на друга.
+       </p>
+       <p>
+        Микросервисы не решают эту проблему. Если вы смешиваете код, который меняется по разным причинам, то можете получить запутанные микросервисы или даже наборы запутанных микросервисов.
+       </p>
+       <p>
+        Слайды Дэна Норта, ссылка на которые приводится выше, не учитывают этого момента. Из-за этого мне кажется, что он вообще не понимает принцип единственной ответственности, или что он иронизировал. Насколько я знаю Дэна, последнее очень вероятно. В ответ на упоминание принципа единственной ответственности он предлагает писать простой код. Я согласен с этим. Принцип единственное ответственности &mdash; один из способов писать простой код.
+       </p>
+       <h2 id="printsip-otkrytosti-zakrytosti">
+        Принцип открытости-закрытости
+       </h2>
+       <blockquote>
+        <p>
+         Модуль должен быть открыт для расширения, но закрыт для модификации.
+        </p>
+       </blockquote>
+       <p>
+        Когда кто-то сомневается в релевантности именно этого принципа, я сильнее всего беспокоюсь за будущее программирования. Конечно, мы хотим создавать модули, которые можно расширять без модификации. Вы можете представить себе работу с системой, в которой не реализована независимость от типа девайса, например, в которой запись файла на диск фундаментально отличается от печати файла на принтере? Мы же не хотим видеть отдельные инструкции для каждого типа девайса в коде?
+       </p>
+       <p>
+        Или&hellip; Хотим ли мы отделять абстрактные концепции от конкретных понятий? Хотим ли мы отделять бизнес-логику от небольших деталей, связанных с интерфейсами, или от протоколов передачи данных, или произвольного поведения базы данных? Конечно да!
+       </p>
+       <p>
+        И снова в слайдах Дэна Норта есть ошибка. При изменении требований только часть существующего кода становится неактуальной. Но значительная часть кода остаётся актуальной. И мы хотим знать, что нам не придётся менять работающую часть кода только для того, чтобы неработающий код снова заработал. Дэн снова предлагает писать простой код. И я снова соглашаюсь. Соблюдение принципа открытости-закрытости помогает писать простой код.
+       </p>
+       <h2 id="printsip-podstanovki-liskov">
+        Принцип подстановки Лисков
+       </h2>
+       <blockquote>
+        <p>
+         Если программа использует интерфейс, она не должна знать о реализации этого интерфейса.
+        </p>
+       </blockquote>
+       <p>
+        Люди, и я в том числе, долгое время ошибались, думая, что принцип подстановки Лисков применим только к наследованию. Это не так. Этот принцип определяет использование подтипов.
+       </p>
+       <p>
+        Все реализации интерфейса являются подтипами этого интерфейса. Все утиные типы относятся к подтипам подразумеваемого интерфейса. А каждый пользователь базового интерфейса должен принимать значение этого интерфейса. Если реализация мешает пользователю базового типа, количество конструкций
+        <code>
+         if/switch
+        </code>
+        в коде растёт.
+       </p>
+       <p>
+        Принцип подстановки Лисков говорит о необходимости чётко определять абстракции. Невозможно поверить, что этот принцип устарел.
+       </p>
+       <p>
+        В этом случае Дэн и его слайды правы. Он просто упустил из виду детали: простой код &mdash; это код, в котором чётко выделены абстракции.
+       </p>
+       <h2 id="printsip-razdeleniya-interfeysa">
+        Принцип разделения интерфейса
+       </h2>
+       <blockquote>
+        <p>
+         Делайте интерфейсы маленькими, чтобы клиенты не зависели от вещей, которыми они не пользуются.
+        </p>
+       </blockquote>
+       <p>
+        Мы всё ещё работаем
+        <a href="https://ru.hexlet.io/blog/posts/yazyk-programmirovaniya-java-osobennosti-populyarnost-situatsiya-na-rynke-truda" target="_blank">
+         с компилируемыми языками
+        </a>
+        . Мы всё ещё зависим от дат модификации, с помощью которых определяем, какие модули нужно перекомпилировать и повторно задеплоить. Пока это так, придётся сталкиваться с проблемой зависимости модуля A от модуля B во время компиляции, а не во время выполнения, поскольку изменения в модуле B приведут к перекомпиляции и повторному деплою модуля A.
+       </p>
+       <p>
+        Эта проблема стоит особенно остро в языках со статической типизацией, например, Java, C#, C++, Go, Swift и так далее. Языки с динамической типизацией подвержены этому в гораздо меньшей степени, но всё-таки полностью не защищены от этой проблемы. Это доказывает существование таких инструментов, как Maven и Leiningen.
+       </p>
+       <p>
+        <div class="hexlet-blog-custom-quote">
+        </div>
+       </p>
+       <blockquote>
+        <p>
+         Читайте также:
+         <a href="https://ru.hexlet.io/blog/posts/sistemy-tipov-v-yazyke-kakie-byvayut-i-chem-otlichayutsya" target="_blank">
+          Системы типов в языке &mdash; какие бывают и чем отличаются
+         </a>
+        </p>
+       </blockquote>
+       <p>
+        Слайд Дэна, посвящённый этому принципу, содержит явно неправильную информацию. Клиенты однозначно зависят от методов, которые не используют, если они нуждаются в перекомпиляции и повторному деплое, когда эти методы меняются. Финальное замечание Дэна здравое, насколько это возможно. Да, если вы можете разделить класс с двумя интерфейсами на два класса, сделайте это. Это соответствует принципу единой ответственности. Но такое разделение часто невозможно и даже нежелательно.
+       </p>
+       <h2 id="printsip-inversii-zavisimostey">
+        Принцип инверсии зависимостей
+       </h2>
+       <blockquote>
+        <p>
+         Модули верхнего уровня не должны зависеть от деталей реализации модулей нижнего уровня.
+        </p>
+       </blockquote>
+       <p>
+        Трудно представить архитектуру, в которой не используется этот принцип. Мы не хотим, чтобы высокоуровневая бизнес-логика зависела от деталей реализации на нижних уровнях. Я надеюсь, что это очевидно. Мы не хотим, чтобы вычисления, которые приносят нам деньги, смешивались с SQL-запросами, низкоуровневой валидацией или форматированием.
+       </p>
+       <p>
+        Мы хотим изолировать высокоуровневые абстракции от низкоуровневых деталей. Это разделение возможно благодаря корректному управлению зависимостями внутри системы. Это управление позволяет всем зависимостям в исходном коде, особенно пересекающим архитектурные границы, указывать на высокоуровневые абстракции, а не на низкоуровневые детали.
+       </p>
+       <p>
+        Слайды Дэна каждый раз заканчиваются призывом писать простой код. Это хороший совет. Но если годы развития индустрии чему-то нас научили, так это тому, что простота требует дисциплины, которая возможна благодаря принципам. Это те самые принципы, которые определяют простоту. Это та дисциплина, которая заставляет программистов писать простой код.
+       </p>
+       <p>
+        Лучший способ всё усложнить и устроить беспорядок &mdash; просто посоветовать людям писать простой код и ничего больше им не объяснить.
+       </p>
+      </div>
+      <div class="d-flex align-items-center mt-5">
+       <a class="x-link-without-decoration mr-3 rounded-circle flex-shrink-0" href="/u/mitra">
+        <img alt="Аватар пользователя Дмитрий Дементий" class="rounded-circle hexlet-blog-post-avatar" height="50" src="https://cdn2.hexlet.io/derivations/image/fill/100/100/eyJpZCI6Ijc3ZjMyMzJlZjBmMDI4YjZjZGQ3YTEyMzVlMThhZDQ2LmpwZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=0a6085031846bc7be3e083223b847c90d4bbb06c0a983acb66ae0780252d34e5" width="50">
+       </a>
+       <div class="d-flex flex-column juctify-content-center align-items-start">
+        <a class="x-link-only-hover" href="/u/mitra">
+         Дмитрий Дементий
+        </a>
+        <span class="text-muted">
+         3 дня назад
+        </span>
+       </div>
+       <div class="ml-auto" id="votes">
+       </div>
+      </div>
+     </article>
+    </div>
+   </section>
+   <section class="container-xl pb-2">
+    <div class="row justify-content-center">
+     <div class="col-12 col-lg-10">
+      <h2 class="h1 font-weight-light">
+       Бесплатные курсы на Хекслете
+      </h2>
+      <p class="lead font-weight-normal mb-2">
+       Учитесь в удобном для вас ритме
+      </p>
+      <div class="row row-cols-2 row-cols-md-4">
+       <div class="col mt-3">
+        <div class="position-relative">
+         <img alt="Иконка курса Основы командной строки" class="img-fluid lazyload" data-src="https://cdn2.hexlet.io/derivations/image/fill/255/160/eyJpZCI6IjQyODJjZTk5NTI4OWE2ZGE2NmFmYjU4MjA1ZTAzMmEyLnBuZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=b30585a97086e1adc46433d24483fd6bd042cd217e00d86485282c785233a752" src="ru-hexlet-io-blog-posts-solid-is-relevant_files/ru-hexlet-iodata-image-gif-base64-R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw--">
+         <div class="p-2 mt-2 text-center">
+          <a class="stretched-link x-link-without-decoration x-line-height-15 text-primary" href="/courses/cli-basics">
+           Основы командной строки
+          </a>
+         </div>
+        </div>
+       </div>
+       <div class="col mt-3">
+        <div class="position-relative">
+         <img alt="Иконка курса Введение в программирование" class="img-fluid lazyload" data-src="https://cdn2.hexlet.io/derivations/image/fill/255/160/eyJpZCI6ImY2OTUwMjU1NWRjN2IzNjQ3MzM2ZTdhY2IzMDJjZjhkLnBuZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=ed189faaebf8e5016f6d89e2c9faba5576e4a1a382974e8d6123e331eca01b92" src="ru-hexlet-io-blog-posts-solid-is-relevant_files/ru-hexlet-iodata-image-gif-base64-R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw--">
+         <div class="p-2 mt-2 text-center">
+          <a class="stretched-link x-link-without-decoration x-line-height-15 text-primary" href="/courses/introduction_to_programming">
+           Введение в программирование
+          </a>
+         </div>
+        </div>
+       </div>
+       <div class="col mt-3">
+        <div class="position-relative">
+         <img alt="Иконка курса Основы современной вёрстки" class="img-fluid lazyload" data-src="https://cdn2.hexlet.io/derivations/image/fill/255/160/eyJpZCI6IjM5NTg0YWQzNDk2ZDU5YWY4YjY1ZWM3NzRmOThhMDlhLnBuZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=28b4c899255f7ec1710fea748814bc8037494414ce3b561abdb872cc6b9bc464" src="ru-hexlet-io-blog-posts-solid-is-relevant_files/ru-hexlet-iodata-image-gif-base64-R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw--">
+         <div class="p-2 mt-2 text-center">
+          <a class="stretched-link x-link-without-decoration x-line-height-15 text-primary" href="/courses/layout-designer-basics">
+           Основы современной вёрстки
+          </a>
+         </div>
+        </div>
+       </div>
+       <div class="col mt-3">
+        <div class="position-relative">
+         <img alt="Иконка курса Введение в Git" class="img-fluid lazyload" data-src="https://cdn2.hexlet.io/derivations/image/fill/255/160/eyJpZCI6ImRlYTZmZTczZGUxNmI4ODg1YWRjNzg1ZmFhMzYwZDk3LnBuZyIsInN0b3JhZ2UiOiJzdG9yZSJ9?signature=fa8356f9189c6c081d3e113023c189b78826414e0b728aeeb87efccd9aac5472" src="ru-hexlet-io-blog-posts-solid-is-relevant_files/ru-hexlet-iodata-image-gif-base64-R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw--">
+         <div class="p-2 mt-2 text-center">
+          <a class="stretched-link x-link-without-decoration x-line-height-15 text-primary" href="/courses/intro_to_git">
+           Введение в Git
+          </a>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+   <section class="container-xl my-5">
+    <div class="row justify-content-center">
+     <div class="col-12 col-lg-10">
+      <div id="disqus_thread">
+      </div>
+      <script>
+       (function() { // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  
+  s.src = `//${gon.disqus_name}.disqus.com/embed.js`;
+  
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+  })();
+      </script>
+      <noscript>
+       Please enable JavaScript to view the
+       <a href="https://disqus.com/?ref_noscript" rel="nofollow">
+        comments powered by Disqus.
+       </a>
+      </noscript>
+     </div>
+    </div>
+   </section>
+  </main>
+  <footer class="bg-light border-top py-4 mt-auto">
+   <div class="container-xl">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 pt-3">
+     <div class="col">
+      <ul class="list-unstyled h3 text-left d-flex flex-wrap">
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://slack-ru.hexlet.io/" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-slack fa-1x">
+         </span>
+        </a>
+       </li>
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://www.youtube.com/user/HexletUniversity" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-youtube fa-1x">
+         </span>
+        </a>
+       </li>
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://twitter.com/HexletHQ" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-twitter fa-1x">
+         </span>
+        </a>
+       </li>
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://t.me/hexlet_ru" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-telegram fa-1x">
+         </span>
+        </a>
+       </li>
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://www.facebook.com/Hexlet" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-facebook fa-1x">
+         </span>
+        </a>
+       </li>
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://vk.com/hexlet" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-vk fa-1x">
+         </span>
+        </a>
+       </li>
+       <li class="mr-4 mb-2">
+        <a class="x-link-without-decoration" href="https://www.instagram.com/hexlethq" rel="noopener noreferrer nofollow" target="_blank">
+         <span class="fab fa-instagram fa-1x">
+         </span>
+        </a>
+       </li>
+      </ul>
+      <ul class="list-unstyled">
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/pages/about">
+         О проекте
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://www.notion.so/hexlet/c6406ed8890747e690d32b050faf42c2" rel="noopener noreferrer nofollow" target="_blanl">
+         Карьера в Хекслете
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/testimonials">
+         Отзывы студентов
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/blog/categories/success">
+         Истории успеха
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://hexlet.printdirect.ru/?partner_id=615497" rel="noopener noreferrer nofollow">
+         Магазин мерча
+        </a>
+       </li>
+      </ul>
+      <p class="mt-3 text-muted">
+       <span class="d-block">
+        Hexlet Ltd.
+       </span>
+       <span class="d-block">
+        UMA Esplanadi, Pohjoisesplanadi 39, 00100 Helsinki, Finland
+       </span>
+       <span class="d-block">
+        VAT ID:&nbsp;FI26641607
+       </span>
+       <span class="d-block">
+        <a href="tel:+7(495)147-73-79">
+         +7 (495) 147-73-79
+        </a>
+       </span>
+      </p>
+      <ul class="list-unstyled">
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/pages/tos">
+         Условия использования
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/pages/privacy">
+         Политика конфиденциальности
+        </a>
+       </li>
+      </ul>
+     </div>
+     <div class="col">
+      <div class="font-weight-bold mb-2">
+       Помощь
+      </div>
+      <ul class="list-unstyled">
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/knowledge">
+         База знаний
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://help.hexlet.io" rel="noopener noreferrer" target="_blank">
+         Справка
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/community">
+         Вопросы по урокам
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="mailto:support@hexlet.io" rel="nofollow">
+         support@hexlet.io
+        </a>
+       </li>
+      </ul>
+      <div class="font-weight-bold mb-2">
+       Компаниям
+      </div>
+      <ul class="list-unstyled">
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/teams">
+         Хекслет для компаний
+        </a>
+       </li>
+      </ul>
+     </div>
+     <div class="col">
+      <div class="font-weight-bold mb-2">
+       Профессии
+      </div>
+      <ul class="list-unstyled">
+       <li class="mb-1 mb-sm-2 mb-lg-3">
+        <a class="x-link-only-hover text-primary" href="https://premium.hexlet.io" rel="noopener noreferrer" target="_blank">
+         Индивидуальное обучение программированию
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/frontend">
+         Фронтенд-программист
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/python">
+         Python-программист
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/php">
+         PHP-программист
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/backend">
+         Node.js-программист
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/layout-designer">
+         Верстальщик
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/java">
+         Java-программист
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/programs/rails">
+         Rails-программист
+        </a>
+       </li>
+      </ul>
+     </div>
+     <div class="col">
+      <div class="font-weight-bold mb-2">
+       Полезно
+      </div>
+      <ul class="list-unstyled">
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/blog">
+         Блог
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://ru.code-basics.com/" rel="noopener noreferrer" target="_blank">
+         Code Basics
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://codebattle.hexlet.io" rel="noopener noreferrer" target="_blank">
+         Code Battle
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://guides.hexlet.io/" rel="noopener noreferrer" target="_blank">
+         Hexlet Guides
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="/categories/sandbox/courses">
+         Песочница
+        </a>
+       </li>
+       <li class="mb-1">
+        <a class="x-link-only-hover" href="https://cv.hexlet.io/" rel="noopener noreferrer" target="_blank">
+         Хекслет-резюме
+        </a>
+       </li>
+      </ul>
+     </div>
+    </div>
+   </div>
+  </footer>
+  <script src="https://js.stripe.com/v3/">
+  </script>
+ </body>
+</html>

@@ -14,4 +14,8 @@ make package-install
 page-loader -h
 ```
 
+### Download page
 [![asciicast](https://asciinema.org/a/398398.svg)](https://asciinema.org/a/398398)
+
+### Download page with images
+[![asciicast](https://asciinema.org/a/jV9ubBg5xArCRe2xqBNaCrwMD.svg)](https://asciinema.org/a/jV9ubBg5xArCRe2xqBNaCrwMD)
