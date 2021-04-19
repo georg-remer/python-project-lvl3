@@ -1,5 +1,6 @@
 """Page loader."""
 
+import logging
 import os
 import re
 from urllib.parse import urlsplit
@@ -21,6 +22,9 @@ def generate_page_name(page_netloc, path):
     """
     page_name = '{netloc}{path}'.format(netloc=page_netloc, path=path)
     page_name = re.sub(r'\W', '-', page_name)
+
+    logging.info('Generated page name: %s', page_name)
+
     return page_name
 
 
@@ -36,6 +40,9 @@ def generate_files_name(page_netloc, path):
     """
     files_name = '{netloc}{path}_files'.format(netloc=page_netloc, path=path)
     files_name = re.sub(r'\W', '-', files_name)
+
+    logging.info('Generated files folder name: %s', files_name)
+
     return files_name
 
 
@@ -49,6 +56,8 @@ def download(url, output):
     Returns:
         str
     """
+    logging.info('Downloading: %s', url)
+
     scheme, netloc, path, _, _ = urlsplit(url)
     page = requests.get(url).text
     soup = BeautifulSoup(page, 'html.parser')
@@ -76,5 +85,7 @@ def download(url, output):
         source_path = os.path.join(output, source_name)
         with open(source_path, 'wb') as source_object:
             source_object.write(source)
+
+    logging.info('Downloaded to: %s', page_path)
 
     return page_path

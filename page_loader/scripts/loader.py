@@ -1,4 +1,5 @@
 """Main module."""
+import logging
 
 from page_loader.cli import parse_args
 from page_loader.loader import download
@@ -6,6 +7,7 @@ from page_loader.loader import download
 
 def main():
     """Download page."""
+    logging.basicConfig(level=logging.INFO)
     url, output = parse_args()
     file_path = download(url, output)
     print(file_path)
