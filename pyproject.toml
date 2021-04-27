@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexlet-code"
-version = "0.4.0"
+version = "0.5.0"
 description = "CLI-utility to download webpages"
 authors = ["George Rymarenko <george.rymarenko@icloud.com>"]
 packages = [
@@ -15,6 +15,7 @@ repository = "https://github.com/georg-remer/python-project-lvl3"
 python = "^3.8"
 requests = "^2.25.1"
 beautifulsoup4 = "^4.9.3"
+progress = "^1.5"
 
 [tool.poetry.dev-dependencies]
 wemake-python-styleguide = "^0.15.2"
