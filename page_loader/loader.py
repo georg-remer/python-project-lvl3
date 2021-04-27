@@ -7,7 +7,6 @@ from urllib.parse import urlsplit
 
 import requests
 from bs4 import BeautifulSoup
-from page_loader import exceptions
 from page_loader.processor import process
 from progress.bar import Bar
 
@@ -50,55 +49,6 @@ def generate_files_name(page_netloc, path):
     return files_name
 
 
-def make_request(url):
-    """Make request.
-
-    Args:
-        url: to make request
-
-    Returns:
-        Response
-
-    Raises:
-        NetworkError: network problem occured
-        HTTPError: HTTP request returned an unsuccessful status code
-        Timeout: Request times out
-    """
-    try:
-        response = requests.get(url)
-    except requests.exceptions.ConnectionError as exception:
-        logger.error('Connection error occured on downloading: {0}'.format(url))
-        raise exceptions.NetworkError() from exception
-    except requests.exceptions.HTTPError as exception:
-        logger.error(
-            'Unsuccessful status code returned on downloading: {0}'.format(url),
-        )
-        raise exceptions.HTTPError() from exception
-    except requests.exceptions.Timeout as exception:
-        logger.error('Timeout error occured on downloading: {0}'.format(url))
-        raise exceptions.Timeout() from exception
-    return response
-
-
-def write_to_file(file_path, file_content, mode='w'):
-    """Write to file.
-
-    Args:
-        file_path: file location
-        file_content: to be written to file
-        mode: in which the file is opened
-
-    Raises:
-        FileSystemError: OS error
-    """
-    try:
-        with open(file_path, mode) as page_object:
-            page_object.write(file_content)
-    except OSError as exception:
-        logger.error('Error writing to: {0}'.format(file_path))
-        raise exceptions.FileSystemError() from exception
-
-
 def download(url, output):
     """Download page.
 
@@ -114,7 +64,10 @@ def download(url, output):
     scheme, netloc, path, _, _ = urlsplit(url)
 
     progress_bar = Bar('Downloading page', max=1)
-    page = make_request(url).text
+    response = requests.get(url)
+    response.raise_for_status()
+
+    page = response.text
     progress_bar.next()
     progress_bar.finish()
 
@@ -132,7 +85,8 @@ def download(url, output):
         '{page_name}.html'.format(page_name=page_name),
     )
     page_content = soup.prettify(formatter='html5')
-    write_to_file(page_path, page_content)
+    with open(page_path, 'w') as page_object:
+        page_object.write(page_content)
 
     # Download sources
     progress_bar_length = len(sources_urls)
@@ -142,8 +96,13 @@ def download(url, output):
             os.mkdir(os.path.join(output, files_name))
 
         source_path = os.path.join(output, source_name)
-        source_content = make_request(source_url).content
-        write_to_file(source_path, source_content, mode='wb')
+        response = requests.get(source_url)
+        response.raise_for_status()
+        source_content = response.content
+
+        with open(source_path, 'wb') as source_object:
+            source_object.write(source_content)
+
         progress_bar.next()
     progress_bar.finish()
 
