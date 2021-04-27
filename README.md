@@ -22,3 +22,4 @@ page-loader -h
 
 ### Download page with all local sources
 [![asciicast](https://asciinema.org/a/ZJMvSpO82MNoUngmlbQqebnxY.svg)](https://asciinema.org/a/ZJMvSpO82MNoUngmlbQqebnxY)
+
