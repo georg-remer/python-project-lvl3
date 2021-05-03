@@ -28,6 +28,7 @@ def make_request(url):
     """
     try:
         response = requests.get(url)
+        response.raise_for_status()
     except requests.exceptions.ConnectionError as exception:
         logger.error('Connection error occured on downloading: {0}'.format(url))
         raise exceptions.NetworkError() from exception
