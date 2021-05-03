@@ -24,7 +24,7 @@ def make_request(url):
     Raises:
         NetworkError: network problem occured
         HTTPError: HTTP request returned an unsuccessful status code
-        Timeout: Request times out
+        RequestTimeoutError: Request times out
     """
     try:
         response = requests.get(url)
@@ -39,7 +39,7 @@ def make_request(url):
         raise exceptions.HTTPError() from exception
     except requests.exceptions.Timeout as exception:
         logger.error('Timeout error occured on downloading: {0}'.format(url))
-        raise exceptions.Timeout() from exception
+        raise exceptions.RequestTimeoutError() from exception
     return response
 
 

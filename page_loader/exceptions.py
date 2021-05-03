@@ -13,7 +13,7 @@ class HTTPError(Exception):
     pass
 
 
-class Timeout(Exception):
+class RequestTimeoutError(Exception):
     """Request times out."""
 
     pass

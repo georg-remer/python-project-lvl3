@@ -43,8 +43,30 @@ def image():
         return file_object.read()
 
 
+@pytest.fixture
+def script():
+    """Return sample script for downloading.
+
+    Returns:
+        bytes
+    """
+    with open('tests/fixtures/script.js', 'r') as file_object:
+        return file_object.read()
+
+
+@pytest.fixture
+def style():
+    """Return sample style for downloading.
+
+    Returns:
+        bytes
+    """
+    with open('tests/fixtures/style.css', 'r') as file_object:
+        return file_object.read()
+
+
 @requests_mock.Mocker(kw='mocker')
-def test_download(page, page_expected, image, **kwargs):
+def test_download(page, page_expected, image, script, style, **kwargs):
     """Test 'download' function.
 
     - webpage is downloaded and processed correctly
@@ -55,6 +77,8 @@ def test_download(page, page_expected, image, **kwargs):
         page: sample webpage for downloading
         page_expected: expected webpage after downloading and processing
         image: sample image for downloading
+        script: sample script for downloading
+        style: sample style for downloading
         kwargs: used for passing mocker
     """
     page_url = 'https://ru.hexlet.io/courses'
@@ -81,10 +105,10 @@ def test_download(page, page_expected, image, **kwargs):
 
     mocker = kwargs['mocker']
     mocker.get(page_url, text=page)
-    mocker.get(sources['css']['url'], text='')
+    mocker.get(sources['css']['url'], text=style)
     mocker.get(sources['link']['url'], text=page)
     mocker.get(sources['image']['url'], content=image)
-    mocker.get(sources['script']['url'], text='')
+    mocker.get(sources['script']['url'], text=script)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         page_path_expected = os.path.join(tmpdirname, page_name)
@@ -102,3 +126,11 @@ def test_download(page, page_expected, image, **kwargs):
         image_path = os.path.join(files_path, sources['image']['name'])
         with open(image_path, 'rb') as image_object:
             assert image_object.read() == image
+
+        script_path = os.path.join(files_path, sources['script']['name'])
+        with open(script_path, 'r') as script_object:
+            assert script_object.read() == script
+
+        style_path = os.path.join(files_path, sources['css']['name'])
+        with open(style_path, 'r') as style_object:
+            assert style_object.read() == style

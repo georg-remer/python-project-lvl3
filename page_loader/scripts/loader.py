@@ -14,13 +14,17 @@ def main():
 
     try:
         file_path = download(url, output)
-    except exceptions.NetworkError:
+    except exceptions.NetworkError as error:
+        logging.error(error)
         sys.exit(1)
-    except exceptions.HTTPError:
+    except exceptions.HTTPError as error:
+        logging.error(error)
         sys.exit(1)
-    except exceptions.Timeout:
+    except exceptions.Timeout as error:
+        logging.error(error)
         sys.exit(1)
-    except exceptions.FileSystemError:
+    except exceptions.FileSystemError as error:
+        logging.error(error)
         sys.exit(1)
     else:
         print(file_path)
