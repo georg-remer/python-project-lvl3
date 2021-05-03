@@ -2,51 +2,63 @@
 
 import logging
 import os
-import re
-from urllib.parse import urlsplit
 
 import requests
 from bs4 import BeautifulSoup
-from page_loader.processor import process
+from page_loader import exceptions
+from page_loader.processor import generate_name, replace_tags
 from progress.bar import Bar
 
 logger = logging.getLogger(__name__)
 
 
-def generate_page_name(page_netloc, path):
-    """Generate page name.
+def make_request(url):
+    """Make request.
 
     Args:
-        page_netloc: URI netloc
-        path: URI path
+        url: to make request
 
     Returns:
-        str
+        Response
+
+    Raises:
+        NetworkError: network problem occured
+        HTTPError: HTTP request returned an unsuccessful status code
+        Timeout: Request times out
     """
-    page_name = '{netloc}{path}'.format(netloc=page_netloc, path=path)
-    page_name = re.sub(r'\W', '-', page_name)
+    try:
+        response = requests.get(url)
+    except requests.exceptions.ConnectionError as exception:
+        logger.error('Connection error occured on downloading: {0}'.format(url))
+        raise exceptions.NetworkError() from exception
+    except requests.exceptions.HTTPError as exception:
+        logger.error(
+            'Unsuccessful status code returned on downloading: {0}'.format(url),
+        )
+        raise exceptions.HTTPError() from exception
+    except requests.exceptions.Timeout as exception:
+        logger.error('Timeout error occured on downloading: {0}'.format(url))
+        raise exceptions.Timeout() from exception
+    return response
 
-    logger.info('Generated page name: {0}'.format(page_name))
 
-    return page_name
-
-
-def generate_files_name(page_netloc, path):
-    """Generate files name.
+def write_to_file(file_path, file_content, mode='w'):
+    """Write to file.
 
     Args:
-        page_netloc: URI netloc
-        path: URI path
+        file_path: file location
+        file_content: to be written to file
+        mode: in which the file is opened
 
-    Returns:
-        str
+    Raises:
+        FileSystemError: OS error
     """
-    files_name = '{netloc}{path}_files'.format(netloc=page_netloc, path=path)
-    files_name = re.sub(r'\W', '-', files_name)
-
-    logger.info('Generated files folder name: {0}'.format(files_name))
-
-    return files_name
+    try:
+        with open(file_path, mode) as page_object:
+            page_object.write(file_content)
+    except OSError as exception:
+        logger.error('Error writing to: {0}'.format(file_path))
+        raise exceptions.FileSystemError() from exception
 
 
 def download(url, output):
@@ -61,32 +73,23 @@ def download(url, output):
     """
     logger.info('Downloading: {0}'.format(url))
 
-    scheme, netloc, path, _, _ = urlsplit(url)
-
     progress_bar = Bar('Downloading page', max=1)
-    response = requests.get(url)
-    response.raise_for_status()
-
-    page = response.text
+    page = make_request(url).text
     progress_bar.next()
     progress_bar.finish()
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    page_name = generate_page_name(netloc, path)
-    files_name = generate_files_name(netloc, path)
+    page_name = generate_name(url)
+    files_name = generate_name(url, source_type='directory')
 
     # Process tags
-    sources_urls = process(scheme, netloc, soup, files_name)
+    sources_urls = replace_tags(url, soup, files_name)
 
     # Save main page
-    page_path = os.path.join(
-        output,
-        '{page_name}.html'.format(page_name=page_name),
-    )
+    page_path = os.path.join(output, '{page_name}'.format(page_name=page_name))
     page_content = soup.prettify(formatter='html5')
-    with open(page_path, 'w') as page_object:
-        page_object.write(page_content)
+    write_to_file(page_path, page_content)
 
     # Download sources
     progress_bar_length = len(sources_urls)
@@ -96,12 +99,8 @@ def download(url, output):
             os.mkdir(os.path.join(output, files_name))
 
         source_path = os.path.join(output, source_name)
-        response = requests.get(source_url)
-        response.raise_for_status()
-        source_content = response.content
-
-        with open(source_path, 'wb') as source_object:
-            source_object.write(source_content)
+        source_content = make_request(source_url).content
+        write_to_file(source_path, source_content, mode='wb')
 
         progress_bar.next()
     progress_bar.finish()

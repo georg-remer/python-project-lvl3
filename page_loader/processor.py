@@ -1,33 +1,59 @@
 """Soup processor."""
 
+import logging
 import os
 import re
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urljoin, urlsplit
 
 IMG = 'img'
 LINK = 'link'
 SCRIPT = 'script'
 TAGS = (IMG, LINK, SCRIPT)
 
+logger = logging.getLogger(__name__)
 
-def is_valid_for_downloading(page_netloc, tag):
-    """Return True if source is valid for downloading.
+
+def generate_name(url, source_type='page', files_name=None):
+    """Generate name.
 
     Args:
-        page_netloc: URI netloc
-        tag: html-tag to check
+        url: source to generate name for
+        source_type: source type to generate name for
+        files_name: files directory name
 
     Returns:
-        bool
+        str
+
+    Raises:
+        ValueError: if unknown source type is used
     """
-    if tag.name in {IMG, SCRIPT}:
-        url = tag.get('src')
-    elif tag.name == LINK:
-        url = tag.get('href')
-    if not url:
-        return False
-    source_netloc = urlsplit(url).netloc
-    return page_netloc == source_netloc or not url.startswith('http')
+    _, netloc, path, _, _ = urlsplit(url)
+    base_name = '{netloc}{path}'.format(netloc=netloc, path=path)
+    base_name, extension = os.path.splitext(base_name)
+    base_name = re.sub(r'\W', '-', base_name)
+    if source_type == 'page':
+        name = '{name}.html'.format(name=base_name)
+
+        logger.info('Generated page name: {0}'.format(name))
+
+    elif source_type == 'directory':
+        name = '{name}_files'.format(name=base_name)
+
+        logger.info('Generated files folder name: {0}'.format(name))
+
+    elif source_type == 'source':
+        name = '{files_name}/{name}{extension}'.format(
+            files_name=files_name,
+            name=base_name,
+            extension=extension if extension else '.html',
+        )
+
+        logger.info('Generated source name: {0}'.format(name))
+
+    else:
+        raise ValueError('Unknown source type: {0}'.format(source_type))
+
+    return name
 
 
 def get_url_from_tag(tag):
@@ -47,66 +73,33 @@ def get_url_from_tag(tag):
     return url, attribute
 
 
-def generate_source_name(page_netloc, source_url, files_name):
-    """Generate source name for saving file.
-
-    Example: 'ru-hexlet-io-assets-professions-nodejs.png' for
-    '/assets/professions/nodejs.png'
+def is_valid_for_downloading(base_url, tag):
+    """Return True if source is valid for downloading.
 
     Args:
-        page_netloc: URI netloc
-        source_url: source URL
-        files_name: files directory name
+        base_url: to check against
+        tag: html-tag to check
 
     Returns:
-        str
+        bool
     """
-    _, source_netloc, source_path, _, _ = urlsplit(source_url)
-    if source_netloc:
-        source_url = '{netloc}{path}'.format(
-            netloc=source_netloc,
-            path=source_path,
-        )
-    else:
-        source_url = '{netloc}{path}'.format(
-            netloc=page_netloc,
-            path=source_url,
-        )
-    name, extension = os.path.splitext(source_url)
-    name = re.sub(r'\W', '-', name)
-    return '{files_name}/{name}{extension}'.format(
-        files_name=files_name,
-        name=name,
-        extension=extension if extension else '.html',
-    )
-
-
-def generate_source_url(scheme, page_netloc, source_url):
-    """Generate source url for downloading.
-
-    Args:
-        scheme: URI scheme
-        page_netloc: URI netloc
-        source_url: source URL
-
-    Returns:
-        str
-    """
+    source_url, _ = get_url_from_tag(tag)
+    if not source_url:
+        return False
+    source_url = urljoin(base_url, source_url)
+    base_netloc = urlsplit(base_url).netloc
     source_netloc = urlsplit(source_url).netloc
-    if source_netloc:
-        return source_url
-    return urlunsplit((scheme, page_netloc, source_url, None, None))
+    return base_netloc == source_netloc
 
 
-def process(scheme, netloc, soup, files_name):
+def replace_tags(base_url, soup, files_name):
     """Replace source tags.
 
     Replace source tags and return a collection of source names and URLs
     to download sources from
 
     Args:
-        scheme: URI scheme
-        netloc: URI netloc
+        base_url: to check against
         soup: BeautifulSoup object
         files_name: name for the files directory
 
@@ -115,10 +108,15 @@ def process(scheme, netloc, soup, files_name):
     """
     urls = {}
     for tag in soup.find_all(TAGS):
-        url, attribute = get_url_from_tag(tag)
+        source_url, attribute = get_url_from_tag(tag)
+        source_url = urljoin(base_url, source_url)
 
-        if is_valid_for_downloading(netloc, tag):
-            source_name = generate_source_name(netloc, url, files_name)
+        if is_valid_for_downloading(base_url, tag):
+            source_name = generate_name(
+                source_url,
+                source_type='source',
+                files_name=files_name,
+            )
             tag[attribute] = source_name
-            urls[source_name] = generate_source_url(scheme, netloc, url)
+            urls[source_name] = source_url
     return urls
