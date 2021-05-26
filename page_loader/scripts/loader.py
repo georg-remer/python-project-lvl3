@@ -2,8 +2,13 @@
 import logging
 import sys
 
-from page_loader import exceptions
 from page_loader.cli import parse_args
+from page_loader.exceptions import (
+    FileSystemError,
+    HTTPError,
+    NetworkError,
+    RequestTimeoutError,
+)
 from page_loader.loader import download
 
 
@@ -14,18 +19,17 @@ def main():
 
     try:
         file_path = download(url, output)
-    except exceptions.NetworkError as error:
+    except (
+        FileSystemError,
+        HTTPError,
+        NetworkError,
+        RequestTimeoutError,
+    ) as error:
         logging.error(error)
         sys.exit(1)
-    except exceptions.HTTPError as error:
-        logging.error(error)
-        sys.exit(1)
-    except exceptions.Timeout as error:
-        logging.error(error)
-        sys.exit(1)
-    except exceptions.FileSystemError as error:
-        logging.error(error)
-        sys.exit(1)
+    except Exception:
+        print('Unexpected error:', sys.exc_info()[0])
+        raise
     else:
         print(file_path)
 

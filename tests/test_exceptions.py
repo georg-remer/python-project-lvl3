@@ -3,72 +3,39 @@
 import tempfile
 
 import pytest
-import requests_mock
-from page_loader import exceptions
+
+from page_loader.exceptions import (
+    FileSystemError,
+    HTTPError,
+    NetworkError,
+    RequestTimeoutError,
+)
 from page_loader.loader import download
 
 
-@requests_mock.Mocker(kw='mocker')
-def test_network_error(**kwargs):
-    """Test custom NetworkError.
+@pytest.mark.parametrize(
+    'exception, dirname',
+    (
+        (FileSystemError, '/root'),
+        (HTTPError, ''),
+        (NetworkError, ''),
+        (RequestTimeoutError, ''),
+    ),
+)
+def test_error(requests_mock, exception, dirname):
+    """Checks custom exceptions.
 
     Args:
-        kwargs: used for passing mocker
+        requests_mock: external fixture
+        exception: custom exception to check
+        dirname: if specified use this for test
     """
     page_url = 'https://unreachable.com'
-    mocker = kwargs['mocker']
-    mocker.get(page_url, exc=exceptions.NetworkError)
+    requests_mock.get(page_url, exc=exception)
 
-    with pytest.raises(exceptions.NetworkError):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            download(page_url, tmpdirname)
-
-
-@requests_mock.Mocker(kw='mocker')
-@pytest.mark.parametrize('status_code', (404, 500))
-def test_http_error(status_code, **kwargs):
-    """Test custom HTTPError.
-
-    Args:
-        status_code: for HTTP error
-        kwargs: used for passing mocker
-    """
-    page_url = 'https://unreachable.com'
-    mocker = kwargs['mocker']
-    mocker.get(page_url, status_code=status_code)
-
-    with pytest.raises(exceptions.HTTPError):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            download(page_url, tmpdirname)
-
-
-@requests_mock.Mocker(kw='mocker')
-def test_timeout_error(**kwargs):
-    """Test custom TimeoutError.
-
-    Args:
-        kwargs: used for passing mocker
-    """
-    page_url = 'https://unreachable.com'
-    mocker = kwargs['mocker']
-    mocker.get(page_url, exc=exceptions.RequestTimeoutError)
-
-    with pytest.raises(exceptions.RequestTimeoutError):
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            download(page_url, tmpdirname)
-
-
-@requests_mock.Mocker(kw='mocker')
-def test_filesystem_error(**kwargs):
-    """Test custom TimeoutError.
-
-    Args:
-        kwargs: used for passing mocker
-    """
-    page_url = 'https://unreachable.com'
-    tmpdirname = '/root'
-    mocker = kwargs['mocker']
-    mocker.get(page_url, exc=exceptions.FileSystemError)
-
-    with pytest.raises(exceptions.FileSystemError):
-        download(page_url, tmpdirname)
+    with pytest.raises(exception):
+        if dirname:
+            download(page_url, dirname)
+        else:
+            with tempfile.TemporaryDirectory() as tmpdirname:
+                download(page_url, tmpdirname)

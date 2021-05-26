@@ -2,17 +2,19 @@
 
 import logging
 import os
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 from bs4 import BeautifulSoup
+from progress.bar import Bar
+
 from page_loader import exceptions
 from page_loader.processor import generate_name, replace_tags
-from progress.bar import Bar
 
 logger = logging.getLogger(__name__)
 
 
-def make_request(url):
+def _make_request(url):
     """Make request.
 
     Args:
@@ -43,7 +45,7 @@ def make_request(url):
     return response
 
 
-def write_to_file(file_path, file_content, mode='w'):
+def _write_to_file(file_path, file_content, mode='w'):
     """Write to file.
 
     Args:
@@ -62,6 +64,34 @@ def write_to_file(file_path, file_content, mode='w'):
         raise exceptions.FileSystemError() from exception
 
 
+def _normalize(url):
+    """Normalize URL.
+
+    Result URL should include:
+    1. scheme
+    2. netloc
+    3. path
+    4. leading slash '/'
+
+    Query and fragment identifiers are dropped
+
+    Args:
+        url: to normalize
+
+    Returns:
+        str
+    """
+    scheme, netloc, path, _, _ = urlsplit(url)
+    if path:
+        if not path.endswith('/'):
+            path = '{0}/'.format(path)
+    elif not netloc.endswith('/'):
+        path = '{0}/'.format(netloc)
+    normalized_url = urlunsplit((scheme, netloc, path, None, None))
+
+    return normalized_url
+
+
 def download(url, output):
     """Download page.
 
@@ -75,33 +105,35 @@ def download(url, output):
     logger.info('Downloading: {0}'.format(url))
 
     progress_bar = Bar('Downloading page', max=1)
-    page = make_request(url).text
+    page = _make_request(url).text
     progress_bar.next()
     progress_bar.finish()
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    page_name = generate_name(url)
-    files_name = generate_name(url, source_type='directory')
+    normalized_url = _normalize(url)
+    page_name = generate_name(normalized_url)
+    files_name = generate_name(normalized_url, name_for='directory')
 
     # Process tags
-    sources_urls = replace_tags(url, soup, files_name)
+    assets_urls = replace_tags(normalized_url, soup, files_name)
 
     # Save main page
-    page_path = os.path.join(output, '{page_name}'.format(page_name=page_name))
+    page_path = os.path.join(output, page_name)
     page_content = soup.prettify(formatter='html5')
-    write_to_file(page_path, page_content)
+    _write_to_file(page_path, page_content)
 
-    # Download sources
-    progress_bar_length = len(sources_urls)
-    progress_bar = Bar('Downloading sources', max=progress_bar_length)
-    for source_name, source_url in sources_urls.items():
-        if not os.path.isdir(os.path.join(output, files_name)):
-            os.mkdir(os.path.join(output, files_name))
+    # Download assets
+    progress_bar_length = len(assets_urls)
+    progress_bar = Bar('Downloading assets', max=progress_bar_length)
 
-        source_path = os.path.join(output, source_name)
-        source_content = make_request(source_url).content
-        write_to_file(source_path, source_content, mode='wb')
+    if not os.path.isdir(os.path.join(output, files_name)):
+        os.mkdir(os.path.join(output, files_name))
+
+    for asset_name, asset_url in assets_urls.items():
+        asset_path = os.path.join(output, asset_name)
+        asset_content = _make_request(asset_url).content
+        _write_to_file(asset_path, asset_content, mode='wb')
 
         progress_bar.next()
     progress_bar.finish()

@@ -10,48 +10,42 @@ LINK = 'link'
 SCRIPT = 'script'
 TAGS = (IMG, LINK, SCRIPT)
 
+tag_attribute_mapping = {
+    IMG: 'src',
+    LINK: 'href',
+    SCRIPT: 'src',
+}
+
 logger = logging.getLogger(__name__)
 
 
-def generate_name(url, source_type='page', files_name=None):
+def generate_name(url, name_for='file'):
     """Generate name.
 
     Args:
-        url: source to generate name for
-        source_type: source type to generate name for
-        files_name: files directory name
+        url: asset to generate name for
+        name_for: file or directory
 
     Returns:
         str
-
-    Raises:
-        ValueError: if unknown source type is used
     """
-    _, netloc, path, _, _ = urlsplit(url)
-    base_name = '{netloc}{path}'.format(netloc=netloc, path=path)
+    if url.endswith('/'):
+        url = url[:-1]
+
+    split_url = urlsplit(url)
+    base_name = '{0}{1}'.format(split_url.netloc, split_url.path)
     base_name, extension = os.path.splitext(base_name)
     base_name = re.sub(r'\W', '-', base_name)
-    if source_type == 'page':
-        name = '{name}.html'.format(name=base_name)
 
-        logger.info('Generated page name: {0}'.format(name))
-
-    elif source_type == 'directory':
-        name = '{name}_files'.format(name=base_name)
-
-        logger.info('Generated files folder name: {0}'.format(name))
-
-    elif source_type == 'source':
-        name = '{files_name}/{name}{extension}'.format(
-            files_name=files_name,
-            name=base_name,
-            extension=extension if extension else '.html',
+    if name_for == 'file':
+        name = '{0}{1}'.format(
+            base_name,
+            extension if extension else '.html',
         )
+    elif name_for == 'directory':
+        name = '{0}_files'.format(base_name)
 
-        logger.info('Generated source name: {0}'.format(name))
-
-    else:
-        raise ValueError('Unknown source type: {0}'.format(source_type))
+    logger.info('Generated name: {0}'.format(name))
 
     return name
 
@@ -65,58 +59,50 @@ def get_url_from_tag(tag):
     Returns:
         (str, str)
     """
-    if tag.name in {IMG, SCRIPT}:
-        attribute = 'src'
-    elif tag.name == LINK:
-        attribute = 'href'
+    attribute = tag_attribute_mapping[tag.name]
     url = tag.get(attribute)
     return url, attribute
 
 
-def is_valid_for_downloading(base_url, tag):
-    """Return True if source is valid for downloading.
+def is_valid_for_downloading(base_url, asset_url):
+    """Return True if asset is valid for downloading.
 
     Args:
         base_url: to check against
-        tag: html-tag to check
+        asset_url: url to check
 
     Returns:
         bool
     """
-    source_url, _ = get_url_from_tag(tag)
-    if not source_url:
+    if not asset_url:
         return False
-    source_url = urljoin(base_url, source_url)
     base_netloc = urlsplit(base_url).netloc
-    source_netloc = urlsplit(source_url).netloc
-    return base_netloc == source_netloc
+    asset_netloc = urlsplit(asset_url).netloc
+    return base_netloc == asset_netloc
 
 
-def replace_tags(base_url, soup, files_name):
-    """Replace source tags.
+def replace_tags(base_url, soup, assets_dir_name):
+    """Replace asset tags.
 
-    Replace source tags and return a collection of source names and URLs
-    to download sources from
+    Replace asset tags and return a collection of asset names and URLs
+    to download assets from
 
     Args:
         base_url: to check against
         soup: BeautifulSoup object
-        files_name: name for the files directory
+        assets_dir_name: name for the assets directory
 
     Returns:
         dict
     """
     urls = {}
     for tag in soup.find_all(TAGS):
-        source_url, attribute = get_url_from_tag(tag)
-        source_url = urljoin(base_url, source_url)
+        asset_url, attribute = get_url_from_tag(tag)
+        full_asset_url = urljoin(base_url, asset_url)
 
-        if is_valid_for_downloading(base_url, tag):
-            source_name = generate_name(
-                source_url,
-                source_type='source',
-                files_name=files_name,
-            )
-            tag[attribute] = source_name
-            urls[source_name] = source_url
+        if is_valid_for_downloading(base_url, full_asset_url):
+            asset_name = generate_name(full_asset_url)
+            full_asset_name = '{0}/{1}'.format(assets_dir_name, asset_name)
+            tag[attribute] = full_asset_name
+            urls[full_asset_name] = full_asset_url
     return urls
