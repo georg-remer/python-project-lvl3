@@ -2,7 +2,6 @@
 
 import logging
 import os
-from urllib.parse import urlsplit, urlunsplit
 
 import requests
 from bs4 import BeautifulSoup
@@ -64,34 +63,6 @@ def _write_to_file(file_path, file_content, mode='w'):
         raise exceptions.FileSystemError() from exception
 
 
-def _normalize(url):
-    """Normalize URL.
-
-    Result URL should include:
-    1. scheme
-    2. netloc
-    3. path
-    4. leading slash '/'
-
-    Query and fragment identifiers are dropped
-
-    Args:
-        url: to normalize
-
-    Returns:
-        str
-    """
-    scheme, netloc, path, _, _ = urlsplit(url)
-    if path:
-        if not path.endswith('/'):
-            path = '{0}/'.format(path)
-    elif not netloc.endswith('/'):
-        path = '{0}/'.format(netloc)
-    normalized_url = urlunsplit((scheme, netloc, path, None, None))
-
-    return normalized_url
-
-
 def download(url, output):
     """Download page.
 
@@ -111,12 +82,11 @@ def download(url, output):
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    normalized_url = _normalize(url)
-    page_name = generate_name(normalized_url)
-    files_name = generate_name(normalized_url, name_for='directory')
+    page_name = generate_name(url)
+    files_name = generate_name(url, name_for='directory')
 
     # Process tags
-    assets_urls = replace_tags(normalized_url, soup, files_name)
+    assets_urls = replace_tags(url, soup, files_name)
 
     # Save main page
     page_path = os.path.join(output, page_name)
@@ -127,7 +97,7 @@ def download(url, output):
     progress_bar_length = len(assets_urls)
     progress_bar = Bar('Downloading assets', max=progress_bar_length)
 
-    if not os.path.isdir(os.path.join(output, files_name)):
+    if assets_urls and not os.path.isdir(os.path.join(output, files_name)):
         os.mkdir(os.path.join(output, files_name))
 
     for asset_name, asset_url in assets_urls.items():

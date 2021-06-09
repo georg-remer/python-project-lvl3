@@ -98,11 +98,11 @@ def replace_tags(base_url, soup, assets_dir_name):
     urls = {}
     for tag in soup.find_all(TAGS):
         asset_url, attribute = get_url_from_tag(tag)
-        full_asset_url = urljoin(base_url, asset_url)
+        full_asset_url = urljoin('{0}/'.format(base_url), asset_url)
 
         if is_valid_for_downloading(base_url, full_asset_url):
             asset_name = generate_name(full_asset_url)
-            full_asset_name = '{0}/{1}'.format(assets_dir_name, asset_name)
+            full_asset_name = os.path.join(assets_dir_name, asset_name)
             tag[attribute] = full_asset_name
             urls[full_asset_name] = full_asset_url
     return urls

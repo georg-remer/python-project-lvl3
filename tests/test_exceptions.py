@@ -1,5 +1,6 @@
 """Custom exceptions tests."""
 
+import os
 import tempfile
 
 import pytest
@@ -34,8 +35,6 @@ def test_error(requests_mock, exception, dirname):
     requests_mock.get(page_url, exc=exception)
 
     with pytest.raises(exception):
-        if dirname:
-            download(page_url, dirname)
-        else:
-            with tempfile.TemporaryDirectory() as tmpdirname:
-                download(page_url, tmpdirname)
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            output = os.path.join(tmpdirname, dirname)
+            download(page_url, output)

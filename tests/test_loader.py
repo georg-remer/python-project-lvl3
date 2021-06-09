@@ -5,13 +5,7 @@ import tempfile
 
 import pytest
 
-from page_loader.loader import _normalize, download
-
-PAGE_EXPECTED = 'page_expected'
-PAGE = 'page'
-IMAGE = 'image'
-SCRIPT = 'script'
-STYLE = 'style'
+from page_loader.loader import download
 
 
 @pytest.fixture
@@ -22,39 +16,49 @@ def assets():
         dict
     """
     assets = {
-        PAGE_EXPECTED: {
+        'page_expected': {
             'path': 'tests/fixtures/ru-hexlet-io-courses_expected.html',
-            'mode': 'r',
         },
-        PAGE: {
+        'page': {
             'path': 'tests/fixtures/ru-hexlet-io-courses.html',
-            'mode': 'r',
             'url': 'https://ru.hexlet.io/courses',
             'name': 'ru-hexlet-io-courses.html',
         },
-        IMAGE: {
+        'link_relative': {
+            'path': 'tests/fixtures/ru-hexlet-io-courses-reviews.html',
+            'url': 'https://ru.hexlet.io/courses/reviews',
+            'name': 'ru-hexlet-io-courses-reviews.html',
+        },
+        'link_absolute': {
+            'path': 'tests/fixtures/ru-hexlet-io-tracks.html',
+            'url': 'https://ru.hexlet.io/tracks',
+            'name': 'ru-hexlet-io-tracks.html',
+        },
+        'link_full_url': {
+            'path': 'tests/fixtures/ru-hexlet-io-about.html',
+            'url': 'https://ru.hexlet.io/about',
+            'name': 'ru-hexlet-io-about.html',
+        },
+        'image': {
             'path': 'tests/fixtures/image.png',
-            'mode': 'rb',
             'url': 'https://ru.hexlet.io/assets/professions/nodejs.png',
             'name': 'ru-hexlet-io-assets-professions-nodejs.png',
         },
-        SCRIPT: {
+        'script': {
             'path': 'tests/fixtures/script.js',
-            'mode': 'r',
             'url': 'https://ru.hexlet.io/packs/js/runtime.js',
             'name': 'ru-hexlet-io-packs-js-runtime.js',
         },
-        STYLE: {
+        'style': {
             'path': 'tests/fixtures/style.css',
-            'mode': 'r',
             'url': 'https://ru.hexlet.io/assets/application.css',
             'name': 'ru-hexlet-io-assets-application.css',
         },
     }
 
     for attributes in assets.values():
-        with open(attributes['path'], attributes['mode']) as file_object:
-            attributes['file_object'] = file_object.read()
+        with open(attributes['path'], 'rb') as file_content:
+            attributes['content'] = file_content.read()
     return assets
 
 
@@ -68,27 +72,25 @@ def test_download(requests_mock, assets):
         requests_mock: external fixture
         assets: dictionary with assets
     """
-    page_expected_attributes = assets.pop(PAGE_EXPECTED)
-    page_expected = page_expected_attributes['file_object']
+    page_expected = assets.pop('page_expected')
 
-    for key, asset in assets.items():
+    for _, asset in assets.items():
         url = asset['url']
-        file_object = asset['file_object']
+        file_content = asset['content']
 
-        if key == IMAGE:
-            requests_mock.get(url, content=file_object)
-        else:
-            requests_mock.get(url, text=file_object)
+        requests_mock.get(url, content=file_content)
+
+    page = assets.pop('page')
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         # Webpage is downloaded and processed correctly
-        page_path_expected = os.path.join(tmpdirname, assets[PAGE]['name'])
-        page_path = download(assets[PAGE]['url'], tmpdirname)
+        page_path_expected = os.path.join(tmpdirname, page['name'])
+        page_path = download(page['url'], tmpdirname)
 
         assert page_path == page_path_expected
 
-        with open(page_path, 'r') as page_object:
-            assert page_object.read() == page_expected
+        with open(page_path, 'rb') as page_object:
+            assert page_object.read() == page_expected['content']
 
         # Assets are downloaded to 'files' directory and saved correctly
         files_name = 'ru-hexlet-io-courses_files'
@@ -99,29 +101,5 @@ def test_download(requests_mock, assets):
 
             assert os.path.exists(asset_path)
 
-            with open(asset_path, attributes['mode']) as asset_object:
-                assert asset_object.read() == attributes['file_object']
-
-
-@pytest.mark.parametrize(
-    'url, expected',
-    (
-        (
-            'https://ru.hexlet.io/courses',
-            'https://ru.hexlet.io/courses/',
-        ),
-        (
-            'https://ru.hexlet.io/courses/',
-            'https://ru.hexlet.io/courses/',
-        ),
-        (
-            'https://ru.hexlet.io/courses?key=value',
-            'https://ru.hexlet.io/courses/',
-        ),
-    ),
-)
-def test_normalize(url, expected):
-    """Test _normalize function."""
-    normalized_url = _normalize(url)
-
-    assert normalized_url == expected
+            with open(asset_path, 'rb') as asset_object:
+                assert asset_object.read() == attributes['content']
